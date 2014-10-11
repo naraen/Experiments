@@ -1,0 +1,80 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Xml.Linq"#>
+<#@ import namespace="System.Collections.Generic"#>
+
+<#@ output extension=".cs" #>
+
+<#
+String configAsString=@"<configuration>
+    <startup> 
+        <supportedRuntime version=""v4.0"" sku="".NETFramework,Version=v4.5"" />
+    </startup>
+
+  <appSettings file=""Config/AppSettingsOverride.config"">
+   
+    <add key=""pollingInterval"" value=""30""/>
+    <add key=""GCMServerAPIKey"" value=""""/>
+    <add key=""GCMSenderId"" value=""""/>
+    <add key=""AndroidApplicationPackageName"" value=""""/>
+    <add key=""RestAPIBase"" value=""""/>
+    <add key=""RestAPIAdminKey"" value=""""/>
+  </appSettings>
+  </configuration>
+";
+
+	List<String> propNames = new List<String>();
+	String configFileName = new FileInfo(Host.TemplateFile).Directory.FullName;
+	var cfg = XDocument.Load(new StringReader(configAsString));
+	//var cfg = XDocument.Load(configFileName);
+	XElement appSettings = cfg.Root.Element(XName.Get("appSettings"));
+
+
+	   
+	foreach (XElement setting in appSettings.Elements()) { 
+		var name= setting.Attribute(XName.Get("key")).Value;
+                
+		propNames.Add(name);
+	}
+#>
+using System.Configuration;
+using System.Diagnostics;
+
+namespace ConfigClassGen
+{
+    partial class Config
+    {
+        private static Config thisInstance;
+        private void OnCreate();
+
+        static Config() {
+            thisInstance = new Config();
+        }
+
+        public static Config GetInstance() {
+            return thisInstance;
+        }
+
+        private Config() {
+			<#
+                foreach(String name in propNames){
+                    var propName=char.IsUpper(name[0])?name: char.ToUpper(name[0]) + name.Substring(1);
+					WriteLine(String.Format("{0}=ConfigurationManager.AppSettings[\"{1}\"];", propName, name));
+                }
+            #>
+           
+            this.TraceSource = new TraceSource("WellPepper");
+        }
+
+		<#
+                foreach(String name in propNames){
+                    var propName=char.IsUpper(name[0])?name: char.ToUpper(name[0]) + name.Substring(1);
+					WriteLine(String.Format("public string {0}{1} get;private set;{2} ", propName, "{", "}"));
+                }
+         #>
+    }
+}
