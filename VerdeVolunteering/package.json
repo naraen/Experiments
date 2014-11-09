@@ -1,0 +1,9 @@
+{
+  "description":"Script run every Friday to send classroom information to all parents",
+  "dependencies": {
+	"csv-parse": "*",
+	"mustache": "*",
+	"moment": "*",
+	"nodemailer": "*"
+  }
+}
