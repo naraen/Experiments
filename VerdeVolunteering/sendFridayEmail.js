@@ -126,7 +126,6 @@ function main(dt) {
     }
 
     function sendEmail(mailOptions) {
-        return;
         // send mail with defined transport object
         transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
