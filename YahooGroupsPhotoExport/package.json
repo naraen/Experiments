@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "cheerio": "^0.18.0",
+    "webdriverio": "^2.4.3"
+  }
+}
