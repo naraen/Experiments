@@ -5,7 +5,7 @@ SUMMARY
 -------
 This node.js app downloads photos from yahoo groups.   Yahoo groups seems to be an unsupported product at this point.   There are no way to export the photos that was upload, except by clicking by navigating to the each album & clicking download on each photo.
 
-The app uses webdriverio to communicate with chromedriver.  chromedriver in turn communicates with selenium-server.   Selenium-server launches the chrome browser and executes browser actions.
+The app uses webdriverio to communicate with selenium-server.   Selenium-server connects via chrome-driver to launch an instance of the Chrome browser and simulates user actions.
 
 DESIGN NOTES
 ------------
