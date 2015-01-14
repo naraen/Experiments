@@ -18,7 +18,7 @@ DESIGN NOTES
 	2. Navigate each photo album, scroll to end and download the HTML.  Extract JSON of photo names, URL.   Validate the # of download urls for each album matches the photocount retrieved in step #1.   If it doesn't adjust the scroll count & retry.
 	3. Configure Fiddler as described below.   Retrieve each photo URL from the JSON & download it.  This can be farmed out by running instances of this app on different computers. Since this takes a while, it is best to let it run unattended.  The included powershell script checks for inactivity, kills everything and restarts the download.
 
-4. Photos are downloaded by opening the URL in the browser instead of click on each download button.   As a result no HTTP_REFERER will be sent to the server causing the download to file.   Fiddler needs to be configured as described below to send a HTTP_REFERER 
+4. Photos are downloaded by opening the URL in the browser instead of click on each download button.   As a result no HTTP\_REFERER will be sent to the server causing the download to file.   Fiddler needs to be configured as described below to send a HTTP_REFERER 
 
 5. Detecting hangs.  The powershell script checks the CPU usage every 5 mins.   CPU usage < 10% is assumed to mean the process has hung.
 
@@ -45,10 +45,10 @@ SETUP INSTRUCTIONS
 	1. Download Fiddler & install fiddler.
 	2. Configure HTTP_REFERER
 		1. Navigate to Rules>Customize Rules.
-		2. In the script, insert the following code at the beginning of the function called onBeforeRequest
-			`if ( oSession.host.indexOf("yimg.com")>-1 && oSession.PathAndQuery.IndexOf('download=1')>-1 ){
-				oSession.oRequest.headers.Add('Referer', 'https://groups.yahoo.com/neo/groups/<<albumName>>/photos/albums');
-			}`
+		2. In the script, insert the following code at the beginning of the function called onBeforeRequest.
+                       `if ( oSession.host.indexOf("yimg.com")>-1 && oSession.PathAndQuery.IndexOf('download=1')>-1 ){`
+				`oSession.oRequest.headers.Add('Referer', 'https://groups.yahoo.com/neo/groups/<<albumName>>/photos/albums');`
+			`}`
 
    3. At the beginning of the function called OnPeekAtResponseHeaders, add the following code.  This minimizes Fiddler memory consumption.
 		`oSession.bBufferResponse = false;`
