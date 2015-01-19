@@ -36,6 +36,7 @@ SETUP INSTRUCTIONS
 	3. Update environment path to include the above folder.
 
 4. Download & setup JRE.  This is needed by selenium-standalone (which is setup in the next step)
+	1. Update environment path to include the bin folder.
 
 5. Download & setup selenium-standalone
 	1. npm install -g selenium-standalone
