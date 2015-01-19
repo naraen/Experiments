@@ -56,6 +56,12 @@ SETUP INSTRUCTIONS
 			
   4. In the bottow status bar, second pane from left, change setting to 'Hide All'.  This minimize Fiddler memory consumption.
 
+ALTERNATIVES
+------------
+   1. casper.js.  Wraps phantomjs and enables synchronous syntax on top of the node.js asynchronous paradigm.   Because casper.js uses a headless webkit browser, there was no way to scroll the window to retrieve the next page. 
+        1. http://www.andykelk.net/tech/web-scraping-with-casperjs
+        2. http://stackoverflow.com/questions/17521065/casperjs-can-not-trigger-twitter-infinite-scroll
+   2. Yahoo YQL.  Seem like a good way to scrape data.   Couldn't figure out a way to scroll page or click on a link to download the file.
 
 USEFUL LINKS
 -------------
