@@ -1,5 +1,8 @@
 "use strict"
 
+//TODO: extract count property by scraping the HTML.  Scroll until the number of <li> items retrieved equals the count.
+//TODO: Figure out how to set referrer when requesting the url directly.
+
 var webdriverio = require('webdriverio'),
     fs=require('fs'),
     cheerio=require('cheerio');
