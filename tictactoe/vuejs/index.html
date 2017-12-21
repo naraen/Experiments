@@ -1,0 +1,88 @@
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<h1>Tic Tac Toe</h1>
+<div id="app">
+  <div>
+  	<span v-if="isGameOver">Game over.  Winner is {{winner}} </span>
+  </div>
+
+  <div>
+  	<span>{{errorMessage}} </span>
+  </div>
+
+  <div>
+	  <ul style="columns:3;">
+	  	<li style="border: 1px solid; width:15px" v-on:click="function() { play(idx, arguments); }" v-for="(cell, idx) in board">{{ cell.v }}</li>
+	  </ul>
+  </div>
+
+  <div><span>{{gameSummary}}</span></div>
+</div>
+
+<script> 
+//TODO: Use CSS to show the cells as a grid. 
+//TODO: Don't show bullets on cell
+//TODO: Make the 3 columns all go together 
+//TODO: Add a button to Start a new game.
+//TODO: Add undo
+
+	var winDef = [
+		[0,3,6],
+		[1,4,7],
+		[2,5,8],
+		[0,1,2],
+		[3,4,5],
+		[6,7,8],
+		[0,4,8],
+		[2,4,6]
+	];
+
+	function isWin( currState ) {
+		for (var idx=0; idx<winDef.length; idx++) {
+			var def = winDef[idx];
+			var seq = def.map( ( cellIdx ) => currState[ cellIdx ] ).join('');
+			if ( seq === 'OOO' || seq === 'XXX') {
+				return true;
+			}
+		}
+		return false;
+	}
+//winning sequence : 4126538, 4726805, 4253107
+
+	var app = new Vue({
+	  el: '#app',
+	  data: {
+	    gameSummary : 'Game started at ' + new Date().toLocaleString(),
+	    isGameOver : false,
+	    currentPlayer : 0,
+	    board : [' ',' ',' ',' ',' ',' ',' ',' ',' '].map( (v) =>  { return { v } } ),
+	    playerMarkers : ['X', 'O'],
+	    winner : '',
+	    errorMessage : '',
+	    playSequence : ''
+	  },
+	  methods : {
+	  	play : function play(cellIdx, vueArguments) {
+	  		if ( this.isGameOver ) {
+	  			return;
+	  		}
+	  		if ( this.board[cellIdx].v !== ' ' ) {
+	  			this.errorMessage = 'That spot is taken. Click on an empty square';
+	  			return;
+	  		}
+	  		this.playSequence += cellIdx;
+	  		this.board[cellIdx].v = this.playerMarkers[this.currentPlayer];
+//TODO: Check for game is draw
+	  		this.isGameOver =  isWin( this.board.map( ( o ) => o.v ));
+			console.log(76, this.playSequence);
+
+	  		if ( this.isGameOver ) {
+	  			this.winner = this.playerMarkers[ this.currentPlayer ];
+	  			return;
+	  		}
+	  		this.currentPlayer = (this.currentPlayer === 0) ? 1 : 0;
+	  	}
+	  }
+	})
+</script>
+
