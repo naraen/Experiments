@@ -1,5 +1,17 @@
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 
+<style>
+  li.tttCell {
+  	border: 1px solid;
+  	width: 15px
+  }
+
+  ul.tttGrid {
+  	columns:3
+  }
+
+</style>
+
 <h1>Tic Tac Toe</h1>
 <div id="app">
   <div>
@@ -11,8 +23,8 @@
   </div>
 
   <div>
-	  <ul style="columns:3;">
-	  	<li style="border: 1px solid; width:15px" v-on:click="function() { play(idx, arguments); }" v-for="(cell, idx) in board">{{ cell.v }}</li>
+	  <ul class="tttGrid">
+	  	<li class="tttCell" v-on:click="function() { play(idx, arguments); }" v-for="(cell, idx) in board">{{ cell.v }}</li>
 	  </ul>
   </div>
 
@@ -37,7 +49,7 @@
 		[2,4,6]
 	];
 
-	function isWin( currState ) {
+	function isWinningMove( currState ) {
 		for (var idx=0; idx<winDef.length; idx++) {
 			var def = winDef[idx];
 			var seq = def.map( ( cellIdx ) => currState[ cellIdx ] ).join('');
@@ -72,11 +84,17 @@
 	  		}
 	  		this.playSequence += cellIdx;
 	  		this.board[cellIdx].v = this.playerMarkers[this.currentPlayer];
-//TODO: Check for game is draw
-	  		this.isGameOver =  isWin( this.board.map( ( o ) => o.v ));
+
+	  		var isWin = isWinningMove( this.board.map( ( o ) => o.v ));
+	  		var isDraw = this.playSequence.length === 9 ;
+	  		this.isGameOver = isWin || isDraw;
+
 			console.log(76, this.playSequence);
 
-	  		if ( this.isGameOver ) {
+			if ( isDraw ) {
+				this.winner = "None";
+			}
+	  		if ( isWin ) {
 	  			this.winner = this.playerMarkers[ this.currentPlayer ];
 	  			return;
 	  		}
