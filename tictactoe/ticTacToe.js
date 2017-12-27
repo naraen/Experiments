@@ -1,7 +1,7 @@
 (function(){
 	"use strict";
 
-
+//The winning # of moves calculation seems to be incorrect
 	var thisSet;
 		
 	function makeBagOfChoices() {
