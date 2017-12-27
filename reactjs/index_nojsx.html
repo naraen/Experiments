@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+
+
+<!--
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+-->
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="root"></div>
+
+    <script type="text/javascript">
+      const e = React.createElement;
+
+      class WelcomeEverybody extends React.Component {
+        constructor (props) {
+          super(props);
+        }
+
+        render() {
+          const children = [];
+          for ( var k in this.props ) {
+            if ( this.props[k] === null ) {
+              continue;
+            }
+            children.push( 
+              e(this.Welcome, { key: k, name: this.props[k]}, null)
+            );
+          }
+
+          return e('div', null, 
+            children, 
+            e('hr', null, null)    
+          );
+        }
+
+        Welcome(props) {
+          return e('h1', null, `Hello, ${props.name}`)
+        }
+      }
+
+      class HelloWorldAndTime extends React.Component {
+        constructor( props ) {
+          super(props);
+          this.state = { now : new Date() };
+        }
+
+        componentDidMount() {
+          this.timerID = setInterval(() => this.tick(), 1000 );
+        }
+
+        componentWillMount() {
+          clearInterval(this.timerID);
+        }
+
+        render() {
+          return e('div', null, 
+            e('h1', null, `Hello, World`), 
+            e('h1', null, "It is ",  `${ this.state.now.toLocaleTimeString() }`, ".")
+          );
+        }
+
+        tick() {
+          this.setState({
+            now: new Date()
+          });
+        }
+      }
+
+      ReactDOM.render(
+        e( WelcomeEverybody, ['Andy', 'Sara', 'World'], null ),
+        document.getElementById('app')
+      );
+
+      ReactDOM.render(
+        e ( HelloWorldAndTime, {  }, null),
+        document.getElementById('root')
+      );
+    </script>
+    <!--
+    From url - https://reactjs.org/docs/react-without-jsx.html
+    class Hello extends React.Component {
+      render() {
+        return <div>Hello {this.props.toWhat}</div>;
+      }
+    }
+
+    ReactDOM.render(
+      <Hello toWhat="World" />,
+      document.getElementById('root')
+    );
+
+    ~~~~-- is the same as ---~~~~
+    class Hello extends React.Component {
+      render() {
+        return React.createElement('div', null, `Hello ${this.props.toWhat}`);
+      }
+    }
+
+    ReactDOM.render(
+      React.createElement(Hello, {toWhat: 'World'}, null),
+      document.getElementById('root')
+    );
+    -->
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      To set up a production-ready React build environment, follow these instructions:
+      * https://reactjs.org/docs/add-react-to-a-new-app.html
+      * https://reactjs.org/docs/add-react-to-an-existing-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      * https://reactjs.org/docs/react-without-jsx.html
+      * https://reactjs.org/docs/cdn-links.html
+
+
+      https://raw.githubusercontent.com/reactjs/reactjs.org/master/static/html/single-file-example.html
+    -->
+  </body>
+</html>
+    <!--
+    TODO: use non-development version of reactjs libraries.
+    TODO: don't use babel.  Do a minimal setup.
+    -->
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      To set up a production-ready React build environment, follow these instructions:
+      * https://reactjs.org/docs/add-react-to-a-new-app.html
+      * https://reactjs.org/docs/add-react-to-an-existing-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      * https://reactjs.org/docs/react-without-jsx.html
+      * https://reactjs.org/docs/cdn-links.html
+
+    Online babel compiler
+    -->

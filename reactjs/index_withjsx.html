@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="app"> </div>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      function Welcome(props) {
+        return <h1>Hello {props.name}</h1>;
+      }
+
+      class WelcomeEverybody extends React.Component {
+        constructor (props) {
+          super(props);
+        }
+
+        render() {
+          return <div>
+            {this.props.children}
+            <hr/>
+          </div>
+        }
+      }
+
+      class HelloWorldAndTime extends React.Component {
+        constructor( props ) {
+          super(props);
+          this.state = { now : new Date() };
+        }
+
+        componentDidMount() {
+          this.timerID = setInterval(() => this.tick(), 1000 );
+        }
+
+        componentWillMount() {
+          clearInterval(this.timerID);
+        }
+
+        render() {
+          return <div>
+            <h1>Hello, World</h1>
+            <h1>It is, {this.state.now.toLocaleTimeString()}.</h1>
+          </div>;
+        }
+
+        tick() {
+          this.setState({
+            now: new Date()
+          });
+        }
+      }
+
+
+      ReactDOM.render(
+        <WelcomeEverybody>
+          <Welcome name="Andy"/>
+          <Welcome name="Sara"/>
+          <Welcome name="World"/>
+        </WelcomeEverybody>,
+        document.getElementById('app')
+      );
+
+      ReactDOM.render(
+        (<HelloWorldAndTime/>),
+        document.getElementById('root')
+      );
+    </script>
+  </body>
+</html>
+    <!--
+    TODO: use non-development version of reactjs libraries.
+    TODO: don't use babel.  Do a minimal setup.
+    -->
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      To set up a production-ready React build environment, follow these instructions:
+      * https://reactjs.org/docs/add-react-to-a-new-app.html
+      * https://reactjs.org/docs/add-react-to-an-existing-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      * https://reactjs.org/docs/react-without-jsx.html
+      * https://reactjs.org/docs/cdn-links.html
+
+    Online babel compiler
+    -->

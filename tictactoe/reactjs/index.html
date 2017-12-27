@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tic Tac Toe</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <style type="text/css">
+      li {
+        border : solid 1px;
+        width : 50px;
+        text-align:  center
+      }
+
+      ul {
+        columns : 3;
+      }
+
+      div.errorMessage {
+        color : red ;
+      }
+
+      div.finishMessage {
+        color : green;
+      }
+
+      li.winningSequence {
+        background-color : green;
+        color : white;
+        font-weight : bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ttt"> </div>
+
+    <script type="text/babel">
+      const winDef = [
+        [0,3,6],
+        [1,4,7],
+        [2,5,8],
+        [0,1,2],
+        [3,4,5],
+        [6,7,8],
+        [0,4,8],
+        [2,4,6]
+      ];
+
+      function isWinningMove( currState ) {
+
+        for (var idx=0; idx<winDef.length; idx++) {
+          var def = winDef[idx];
+          var seq = def.map( ( cellIdx ) => currState[ cellIdx ] ).join('');
+
+          if ( seq === 'OOO' || seq === 'XXX') {
+            return { isWin : true, sequence : def };
+          }
+        }
+        return { isWin : false, sequence : [] };
+      }
+
+      class TicTacToe extends React.Component {
+        constructor (props) {
+          super(props);
+          this.cellClick = this.cellClick.bind(this);
+          this.state = {
+            gameState : ['','','','','','','','',''],
+            currentPlayer : 0,
+            markers : ['X', 'O'],
+            showError : true,
+            errorMessage : '',
+            winningSequence : { },
+            winner : -1,
+            isGameOver : false,
+            playSequence : '',
+            gameStartTime : new Date()
+          }
+        }
+
+        cellClick(cellIdx, e) { 
+          this.setState( (prevState) => {
+            if ( prevState.isGameOver ) {
+              return {};
+            }
+
+            if ( prevState.gameState[cellIdx] !== '' ) {
+              return {
+                showError : true, 
+                errorMessage : 'That cell is already taken.  Click on a different cell'
+              }
+            }
+
+            prevState.gameState[cellIdx] = prevState.markers[prevState.currentPlayer];
+
+            const gameStatus = isWinningMove( prevState.gameState );
+            const winningSequence = gameStatus.sequence.reduce( (memo, v) => {  memo[v]=''; return memo; }, {}) ;
+
+            return {
+              gameState : prevState.gameState,
+              currentPlayer : prevState.currentPlayer === 0 ? 1 : 0,
+              showError : false,
+              winningSequence : winningSequence,
+              isGameOver : gameStatus.isWin || prevState.playSequence.length === 8, 
+              winner : gameStatus.isWin ? prevState.markers[prevState.currentPlayer] : 'No one',
+              playSequence : prevState.playSequence + cellIdx
+            };
+
+          } );
+        }
+
+        render() {
+          const errorMessage = this.state.showError && <div className="errorMessage">{this.state.errorMessage}</div>;
+          const finishMessage = this.state.isGameOver && <div className="finishMessage">Winner is ... {this.state.winner} !!!</div>
+          return <div> 
+          {errorMessage}
+          {finishMessage}
+          <ul>
+            {this.state.gameState.map( 
+              (marker, idx) => <li className={this.state.winningSequence[idx] === undefined ? "" : "winningSequence"} 
+                key={idx} onClick={(e) => this.cellClick(idx, e)}>{ marker }</li> 
+            )}
+          </ul>
+          <div>Game started at {this.state.gameStartTime.toLocaleString() }</div>
+          </div>
+        }
+      }
+
+      ReactDOM.render(
+        <TicTacToe/>,
+        document.getElementById('ttt')
+      );
+
+    </script>
+  </body>
+</html>

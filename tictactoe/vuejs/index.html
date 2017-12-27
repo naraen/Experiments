@@ -10,12 +10,17 @@
   	columns:3
   }
 
+  #gameover {
+  	color: green;
+  }
 </style>
+
+012345678
 
 <h1>Tic Tac Toe</h1>
 <div id="app">
-  <div>
-  	<span v-if="isGameOver">Game over.  Winner is {{winner}} </span>
+  <div id="gameover" v-if="isGameOver">
+  	<span id="gameover">Game over.  Winner is {{winner}} </span>
   </div>
 
   <div>
@@ -60,7 +65,8 @@
 		return false;
 	}
 //winning sequence : 4126538, 4726805, 4253107
-
+//TODO: The spot is taken doesn't go away when a different square is clicked.
+//winning sequence in 9th move : 056382174
 	var app = new Vue({
 	  el: '#app',
 	  data: {
