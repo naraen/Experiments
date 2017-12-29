@@ -36,16 +36,15 @@
 
 
 	function generateGridForSequence( playSequence ){
-		var grid = new Array(9).fill('_');
-		for ( var idx=0; idx<9; idx++) {
-			var cellIdx = playSequence[ idx ];		
-			grid[ cellIdx ] = ( idx % 2 == 0) ? 0 : 1;
-		}
-		return grid;
+		return playSequence
+			.reduce( (grid, cellIdx, turnNumber) => {
+				grid[cellIdx] = (turnNumber %2 === 0 ? 0 : 1);
+				return grid;
+			}, new Array(9).fill('_'));
 	}
 
 
-	var winDef = [
+	const winDef = [
 		[0,3,6],
 		[1,4,7],
 		[2,5,8],
@@ -56,7 +55,7 @@
 		[2,4,6]
 	];
 
-	var winDef2 = winDef.reduce( ( acc, thisSequence, defIdx ) => {
+	const winningSequencesByPlayedPosition = winDef.reduce( ( acc, thisSequence, defIdx ) => {
 		for (var idx=0; idx<3; idx++) {
 			var thisCell = thisSequence[ idx ];
 			if ( acc[thisCell] === undefined ) {
@@ -69,19 +68,53 @@
 	}, {});
 
 
+	function findWinnerIgnoringOrder( playSequence ) {
+		const grid = generateGridForSequence(playSequence);
+
+		for ( var idx=0; idx<winDef.length; idx++ ){
+			const sequence = winDef[idx]
+				.reduce((memo, cellIdx) => memo + grid[cellIdx], "");
+
+			if (sequence === '000') {
+				return '0';
+			}
+
+			if (sequence === '111') {
+				return '1';
+			}
+		}
+		return -1;
+	}
+
 	function findWinner( playSequence ) {
-		var winStates = ['','','','','','','',''];
+		const winStates = winDef.map( () => ({ 
+			isRuledOut : false, 
+			forPlayer : -1, 
+			count:0 
+		}));
 		var winner = -1;
 
 		for ( var idx = 0; idx < 9; idx++ ) {
 			var playerNo = idx % 2 === 0 ? 0 : 1;
-			var winDef2Elem = winDef2[ playSequence[idx] ];
-			for ( var wIdx = 0; wIdx < winDef2Elem.length; wIdx++ ) {
-				winStates[ winDef2Elem[ wIdx] ] = winStates[ winDef2Elem[ wIdx] ] + playerNo;
-				
-				var newState = winStates[ winDef2Elem[ wIdx] ];
-				
-				if ( newState === '000' || newState === '111') {
+			var sequencesForThisPlay = winningSequencesByPlayedPosition[ playSequence[idx] ];
+			for ( var wIdx = 0; wIdx < sequencesForThisPlay.length; wIdx++ ) {
+				var thisWinState = winStates[ sequencesForThisPlay[ wIdx ]];
+				if ( thisWinState.isRuledOut ) continue;
+
+				if (thisWinState.count === 0) {
+					thisWinState.count++;
+					thisWinState.forPlayer = playerNo;
+					continue;
+				}
+
+				if (thisWinState.forPlayer !== playerNo ) {
+					thisWinState.isRuledOut = true;
+					continue;
+				}
+
+				thisWinState.count++;
+
+				if ( thisWinState.count === 3) {
 					winner = playerNo;
 					break;
 				}
@@ -89,13 +122,39 @@
 			if ( winner !== -1) break;
 		}
 
-		return [ idx,  winner];
+		return [ idx===9? 8 : idx,  winner];
 	}
 
+
+	const symmetryTransforms = [
+		[], //no change
+		[ [0,2], [2,0], [3,5], [5,3], [6,8], [8,6] ], //vertical axis
+		[ [0,6], [1,7], [2,8], [6,0], [7,1], [8,2] ], //horizontal axis
+		[ [1,3], [3,1], [2,6], [6,2], [5,7], [7,5] ], //LT to RB axis
+		[ [0,8], [1,5], [3,7], [5,1], [7,3], [8,0] ], //RT to LB axis
+		[ [0,6], [1,3], [2,0], [3,7], [5,1], [6,8], [7,5], [8,2] ], //90 rotation
+		[ [0,8], [1,7], [2,6], [3,5], [5,3], [6,2], [7,1], [8,0] ], //180 rotation
+		[ [0,2], [1,5], [2,8], [3,1], [5,7], [6,0], [7,3], [8,6] ] //270 rotation
+	];
+	
+	
+	function generateSymmetricalSequences( thisSequence ) {
+		return symmetryTransforms.map( (e) => {
+			return e.reduce( (memo, pair) => {
+				memo[pair[0]] = thisSequence[pair[1]];
+				return memo;
+			}, thisSequence.split(''))
+			.join("") ;  
+		})
+		.sort();
+	}
+	
 	module.exports = {
 		generateRandomPlaySequence,
 		generateGridForSequence,
-		findWinner
+		findWinner,
+		findWinnerIgnoringOrder,
+		generateSymmetricalSequences
 	};
 
 }());
