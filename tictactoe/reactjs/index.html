@@ -95,12 +95,17 @@
 
         undoClick(e) {
           this.setState( (prevState) => {
-            var lastCellClicked = prevState.playSequence.substr(-1);
-            prevState.gameState[ lastCellClicked ] = '';
+            const lastCellClicked = prevState.playSequence.substr(-1);
+            const gameState = prevState.gameState.slice();
+
+            gameState[lastCellClicked] = '';
+            const playSequence = prevState.playSequence.substring(0, prevState.playSequence.length -1);
+            const currentPlayer = ( playSequence.length %2 === 0 ) ? 0 : 1
 
             return {
-              gameState : prevState.gameState,
-              playSequence : prevState.playSequence.substring(0, prevState.playSequence.length -1)
+              gameState,
+              playSequence,
+              currentPlayer
             }
           } );
         }

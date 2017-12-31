@@ -20,7 +20,7 @@
 				play, 
 				winner[0]+1, 
 				['D','O','X'][winner[1] + 1],
-				require('./ticTacToe.js').pickCanonicalSequence(grid),
+				require('./ticTacToe.js').generateSymmetricalSequences(grid)[0],
 				grid, 
 			].join(','));
 		});

@@ -72,8 +72,8 @@
 		const grid = generateGridForSequence(playSequence);
 
 		for ( var idx=0; idx<winDef.length; idx++ ){
-			const sequence = winDef[idx]
-				.reduce((memo, cellIdx) => memo + grid[cellIdx], "");
+			const [c1, c2, c3] = winDef[idx];			
+			const sequence = grid[a] + grid[b] + grid[c];
 
 			if (sequence === '000') {
 				return '0';

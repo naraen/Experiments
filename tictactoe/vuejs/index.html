@@ -3,9 +3,15 @@
 <style>
   li.tttCell {
   	border: 1px solid;
-  	width: 15px
+  	width: 50px;
+		text-align : center
   }
 
+	li.winningSequence {
+		background-color:green;
+		color : white;
+		font-weight: bold
+	}
   ul.tttGrid {
   	columns:3
   }
@@ -15,12 +21,11 @@
   }
 </style>
 
-012345678
-
 <h1>Tic Tac Toe</h1>
 <div id="app">
   <div id="gameover" v-if="isGameOver">
-  	<span id="gameover">Game over.  Winner is {{winner}} </span>
+		<span >Game over.  Winner is {{winner}} </span>
+		
   </div>
 
   <div>
@@ -29,11 +34,19 @@
 
   <div>
 	  <ul class="tttGrid">
-	  	<li class="tttCell" v-on:click="function() { play(idx, arguments); }" v-for="(cell, idx) in board">{{ cell.v }}</li>
+			<li class="tttCell" v-on:click="function() { play(idx, arguments); }" 
+				v-for="(cell, idx) in board" v-bind:class="{ winningSequence : cell.winningSequence }">{{ cell.v }}</li>
 	  </ul>
   </div>
 
-  <div><span>{{gameSummary}}</span></div>
+  <div>
+		<div>
+			<button v-on:click="undo">Undo</button>
+			&nbsp;
+			<button v-on:click="restart">Restart</button>
+		</div>
+		<div>{{gameSummary}}</div>
+	</div>
 </div>
 
 <script> 
@@ -59,10 +72,10 @@
 			var def = winDef[idx];
 			var seq = def.map( ( cellIdx ) => currState[ cellIdx ] ).join('');
 			if ( seq === 'OOO' || seq === 'XXX') {
-				return true;
+				return { isWin : true, sequence : def } ;
 			}
 		}
-		return false;
+		return { isWin : false, sequence : [] };
 	}
 //winning sequence : 4126538, 4726805, 4253107
 //TODO: The spot is taken doesn't go away when a different square is clicked.
@@ -73,39 +86,72 @@
 	    gameSummary : 'Game started at ' + new Date().toLocaleString(),
 	    isGameOver : false,
 	    currentPlayer : 0,
-	    board : [' ',' ',' ',' ',' ',' ',' ',' ',' '].map( (v) =>  { return { v } } ),
+	    board : [' ',' ',' ',' ',' ',' ',' ',' ',' '].map( (v) =>  { 
+				return { 
+					v,
+					winningSequence : false,
+				} 
+			} ),
 	    playerMarkers : ['X', 'O'],
 	    winner : '',
 	    errorMessage : '',
 	    playSequence : ''
 	  },
 	  methods : {
-	  	play : function play(cellIdx, vueArguments) {
+			restart : function restart(vueArguments) {
+				const newState = {
+					gameSummary : 'Game started at ' + new Date().toLocaleString(),
+					isGameOver : false,
+					currentPlayer : 0,
+					board : [' ',' ',' ',' ',' ',' ',' ',' ',' '].map( (v) =>  { return { v } } ),
+					playerMarkers : ['X', 'O'],
+					winner : '',
+					errorMessage : '',
+					playSequence : ''
+				}
+
+				for ( var p in newState ) {
+					this[p] = newState[p];
+				}
+			},
+			play : function play(cellIdx, vueArguments) {
 	  		if ( this.isGameOver ) {
 	  			return;
 	  		}
-	  		if ( this.board[cellIdx].v !== ' ' ) {
+				
+				if ( this.board[cellIdx].v !== ' ' ) {
 	  			this.errorMessage = 'That spot is taken. Click on an empty square';
 	  			return;
 	  		}
 	  		this.playSequence += cellIdx;
 	  		this.board[cellIdx].v = this.playerMarkers[this.currentPlayer];
 
-	  		var isWin = isWinningMove( this.board.map( ( o ) => o.v ));
-	  		var isDraw = this.playSequence.length === 9 ;
-	  		this.isGameOver = isWin || isDraw;
+				const gameStatus = isWinningMove( this.board.map( ( o ) => o.v ));
+	  		const isDraw = this.playSequence.length === 9 ;
 
-			console.log(76, this.playSequence);
+				this.isGameOver = gameStatus.isWin || isDraw;
 
-			if ( isDraw ) {
-				this.winner = "None";
-			}
-	  		if ( isWin ) {
-	  			this.winner = this.playerMarkers[ this.currentPlayer ];
-	  			return;
-	  		}
+				console.log(76, this.playSequence, gameStatus);
+
+				if ( isDraw ) {
+					this.winner = "None";
+				}
+
+				if ( gameStatus.isWin ) {
+					this.winner = this.playerMarkers[ this.currentPlayer ];
+					gameStatus.sequence.forEach( ( winningPos ) => {
+						this.board[ winningPos ].winningSequence = true;
+					} )
+					return;
+				}
 	  		this.currentPlayer = (this.currentPlayer === 0) ? 1 : 0;
-	  	}
+			},
+			undo : function undo ( vueArguments ) {
+				const lastPlay = this.playSequence.substr(-1);
+				this.playSequence = this.playSequence.substring( 0, this.playSequence.length -1);
+				this.board[lastPlay].v = ' ';
+				this.currentPlayer  = (this.currentPlayer === 0) ? 1 : 0;
+			}
 	  }
 	})
 </script>
