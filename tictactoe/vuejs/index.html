@@ -1,24 +1,44 @@
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 
 <style>
-  li.tttCell {
-  	border: 1px solid;
+  .tttCell {
   	width: 50px;
-		text-align : center
-  }
+		height:50px;
+		background-color: white;
+		text-align : center;
+		vertical-align: middle;
+		line-height: 50px;
+	}
 
-	li.winningSequence {
+	.winningSequence {
 		background-color:green;
 		color : white;
 		font-weight: bold
 	}
-  ul.tttGrid {
-  	columns:3
+
+  .tttGrid {
+		width:155px;
+		height:155px;
+		display:grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-rows: 1fr 1fr 1fr;
+		background-color:forestgreen;
+		grid-column-gap : 1px;
+		grid-row-gap : 1px;
+		border : 1px solid forestgreen;
   }
 
   #gameover {
   	color: green;
   }
+
+	.controls {
+		padding-top:30px;
+	}
+
+	.messages {
+		padding-bottom:20px;
+	}
 </style>
 
 <h1>Tic Tac Toe</h1>
@@ -28,18 +48,16 @@
 		
   </div>
 
-  <div>
+  <div class="messages">
   	<span>{{errorMessage}} </span>
   </div>
 
-  <div>
-	  <ul class="tttGrid">
-			<li class="tttCell" v-on:click="function() { play(idx, arguments); }" 
-				v-for="(cell, idx) in board" v-bind:class="{ winningSequence : cell.winningSequence }">{{ cell.v }}</li>
-	  </ul>
+  <div class="tttGrid">
+			<div class="tttCell" v-on:click="function() { play(idx, arguments); }" 
+				v-for="(cell, idx) in board" v-bind:class="{ winningSequence : cell.winningSequence }">{{ cell.v }}</div>
   </div>
 
-  <div>
+  <div class="controls">
 		<div>
 			<button v-on:click="undo">Undo</button>
 			&nbsp;
@@ -151,6 +169,8 @@
 				this.playSequence = this.playSequence.substring( 0, this.playSequence.length -1);
 				this.board[lastPlay].v = ' ';
 				this.currentPlayer  = (this.currentPlayer === 0) ? 1 : 0;
+				this.isGameOver = false;
+				this.board.forEach( c => { c.winningSequence=false} )
 			}
 	  }
 	})
