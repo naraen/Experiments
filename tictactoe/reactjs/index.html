@@ -7,14 +7,8 @@
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <style type="text/css">
-      li {
-        border : solid 1px;
-        width : 50px;
-        text-align:  center
-      }
-
-      ul {
-        columns : 3;
+      .controls {
+        padding-top:30px;
       }
 
       div.errorMessage {
@@ -25,7 +19,28 @@
         color : green;
       }
 
-      li.winningSequence {
+      .tttCell {
+        width: 50px;
+        height:50px;
+        background-color: white;
+        text-align : center;
+        vertical-align: middle;
+        line-height: 50px;
+      }
+
+      .tttGrid {
+        width:155px;
+        height:155px;
+        display:grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 1fr 1fr 1fr;
+        background-color:forestgreen;
+        grid-column-gap : 1px;
+        grid-row-gap : 1px;
+        border : 1px solid forestgreen;
+      }
+
+      .winningSequence {
         background-color : green;
         color : white;
         font-weight : bold;
@@ -105,7 +120,10 @@
             return {
               gameState,
               playSequence,
-              currentPlayer
+              currentPlayer,
+              winningSequence : {},
+              winner : -1,
+              isGameOver : false
             }
           } );
         }
@@ -148,13 +166,13 @@
           <h1>Tic Tac Toe</h1>
           {errorMessage}
           {finishMessage}
-          <ul>
+          <div className="tttGrid">
             {this.state.gameState.map( 
-              (marker, idx) => <li className={this.state.winningSequence[idx] === undefined ? "" : "winningSequence"} 
-                key={idx} onClick={(e) => this.cellClick(idx, e)}>{ marker }</li> 
+              (marker, idx) => <div className={"tttCell " + (this.state.winningSequence[idx] === undefined ? "" : "winningSequence")} 
+                key={idx} onClick={(e) => this.cellClick(idx, e)}>{ marker }</div> 
             )}
-          </ul>
-          <div>
+          </div>
+          <div className="controls">
             <button onClick={this.undoClick}>Undo</button> &nbsp;
             <button onClick={this.restartClick}>Restart</button>
           </div>
