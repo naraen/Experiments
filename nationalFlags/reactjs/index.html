@@ -6,25 +6,15 @@
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-    <script src="../countries.js"></script>
+
+
+    <script src="../countryCodes.js"></script>
     <script src="../flags.js"></script>
     <style type="text/css">
       .droppedFlag {
         height : 50;
         width : 500px;
         border : solid 1px;
-      }
-
-      .navControl {
-        height:100%;
-        background-color:red;
-        vertical-align:center;
-      }
-
-      .countryPane {
-        display:grid;
-        grid-template-columns:1fr 98fr 1fr;
-        margin-bottom : 20px;
       }
 
       .country {
@@ -34,18 +24,12 @@
         margin : 2px;
       }
 
-      .scrollableCountry {
-        height: 35px;
-        overflow-x: hidden;
-        border: 1px solid red;
+      .countryPane {
+        margin-bottom : 25px;
       }
 
-      .innerCountry {
-        width:20000px;
-      }
-
-      .flagPane {
-        display: grid;
+      .controlPane {
+        margin-bottom : 25px;
       }
 
       .flag {
@@ -55,18 +39,13 @@
         margin : 2px;
         vertical-align: top;
       }
-
-      .scrollableFlags {
-        height:170px;
-        overflow-x :hidden;
-        border: 1px solid blue;
-        width:100%
-      }
-
-      .innerFlag {
-        width:28350px;
-      }
     
+      .flagMatched {
+        background-color : green;
+        color : white;
+        
+      }
+
       .droppedName {
         width : 100%;
         margin : 0px;
@@ -79,68 +58,135 @@
   <body>
     <!-- Flags from https://github.com/hjnilsson/country-flags/tree/master/png100px -->
     <!-- Country names from https://www.state.gov/misc/list/ -->
+    <!-- There is a ISO standard for country codes.   ISO 3166-2   -->
 
+    <!-- 
+      TODO: If match change color. 
+      TODO: Allow removing a country name from a flag.
+      TODO: Scrolling is really hard.   Try a different way to see everything.
+        *** Make flags thumbnail.  Hovering on thumbnail zooms the flag.
+    -->
     <div id="flagsApp"> 
     </div>
 
     <script type="text/babel">
+
       class Flags  extends React.Component{
         constructor (props ) {
           super(props)
           this.props = props;
-          this.state = {
-            countries : countries.map((n) => ({ name : n })),
-            flags : flags.map((f) => ({ src : f, name : ""})),
+          const state = {
+            flags : flags.map((f) => ({ src : f, countryIdx : -1, matched : false })),
           }
-          this.onFlagDrop= this.onFlagDrop.bind(this);
+
+          const countries = Object.keys(countryCodes)
+              .sort((a, b) => countryCodes[a].toLowerCase() > countryCodes[ b ].toLowerCase() ? 1 : -1)
+              .map((cc)=> ({ name : countryCodes[cc], cc: cc.toLowerCase(), paired : false}));
+
+          state.countries = countries;
+          
+    
+          ( sessionStorage.getItem('history') || '' )
+            .split('|')
+            .forEach( ( savedMatch ) => {
+              if (savedMatch === '') {
+                return;
+              }
+
+              const [countryIdx, flagIdx] = savedMatch.split(',');
+              state.countries[countryIdx].paired = true;
+              state.flags[flagIdx].countryIdx = countryIdx;
+            } );
+          
+          this.state = state;
+          this.nameDrag= this.nameDrag.bind(this);
+          this.flagDrop= this.flagDrop.bind(this);
+          this.flagDragOver= this.flagDragOver.bind(this);
+          this.undoClick= this.undoClick.bind(this);
         }
 
         render () {
           return <div>
             <div id="countryContainer" className="countryPane">
-              <div className="navControl"><div>&nbsp;&gt;&nbsp; </div></div>
-              <div className="scrollableCountry"><div className="innerCountry">{this.state.countries.map( (c, idx) => <div className="country" key={idx}>{c.name}</div>)}</div></div>
-              <div> <span className="navControl"> &nbsp;&gt;&nbsp; </span></div>
+              {this.state.countries.map( (c, idx) => { 
+                if ( c.paired ) {
+                  return "";
+                }
+                return <div 
+                  className="country" 
+                  draggable="true"
+                  onDrag={(ev) => this.nameDrag(idx, ev)}
+                  key={idx}>{c.name}
+                </div>
+              })}
             </div>
-
+            <div className="controlPane">
+              <button onClick={this.undoClick}>Undo</button>
+              </div>
             <div id="flagContainer" className="flagPane"> 
-              <div> <div className="navControl"> &nbsp;&gt;&nbsp; </div></div>
-              <div className="scrollableFlags" id="flagContainer"><div className="innerFlag">
                 {this.state.flags.map( (f, idx ) => { 
-                  return <div className="flag" 
-                      key={idx} 
-                      draggable="true" 
-                      onDrag={(ev) => this.onFlagDrag(idx, ev)} >
-                    <div><img  src={"../flags/" + f.src}/> </div>
-                    <div className="droppedName"> {" ell" + f.name} </div>
+                  return <div className="flag"  
+                      onDrop={(ev) => this.flagDrop(idx, ev) }
+                      onDragOver={this.flagDragOver}
+                      key={idx} >
+                    <img  src={"../flags/" + f.src}/>
+                    <div className={"droppedName" + (f.matched ? " flagMatched" : "" )}> &nbsp; { f.countryIdx === -1 ? "" : this.state.countries[f.countryIdx].name } </div>
                   </div>}
                 )}
-              </div></div>
-              <div> <div className="navControl"> &nbsp;&gt;&nbsp; </div></div>
             </div>
           </div>
         }
-        onFlagDrop(idx, ev) {
-          const from =this.currentFlagDrag;
-          const to = idx;
 
-          this.state.countries[idx].flagSrc = this.state.flags[from];
-          const tempFlagList = this.state.flags.concat([]);
-          const temp = tempFlagList[to];
-          tempFlagList[to] = tempFlagList[from];
-          tempFlagList[from] = temp;
+        undoClick( e ) {
+          const history = sessionStorage.getItem('history').split('|');
+          const [countryIdx, flagIdx] = history[ history.length-1 ].split(',');
+
+          this.state.countries[ countryIdx ].paired = false;
+          this.state.flags[ flagIdx ].countryIdx = -1;
+          this.state.flags[ flagIdx ].matched = false;
+
+          const newHistory = history.splice(0, history.length -1).join('|');
+          sessionStorage.setItem('history', newHistory);
+
+          this.setState(()=> ({
+            flags : this.state.flags,
+            countries : this.state.countries,
+          }));
+        }
+
+        flagDragOver( ev ) {
+          ev.preventDefault();
+        }
+
+        flagDrop(idx, ev) {
+          const draggedCountryIdx =this.draggedCountryIdx;
+          const droppedFlagIdx = idx;
+
+          this.state.countries[draggedCountryIdx].paired = true;
+          this.state.flags[droppedFlagIdx].countryIdx = draggedCountryIdx;
+          const countryCode = this.state.countries[draggedCountryIdx].cc
+          const imageFileName = this.state.flags[droppedFlagIdx].src;
+
+          console.log(132, this.state.flags[droppedFlagIdx], this.state.countries[draggedCountryIdx]);
+//console.log(126, countryCode, imageFileName, (countryCode + '.png' === imageFileName) );
+
+          this.state.flags[droppedFlagIdx].matched = (countryCode + '.png' === imageFileName);
+
+          var history = sessionStorage.getItem('history') || '';          
+          history += '|' + draggedCountryIdx + ',' + droppedFlagIdx
+          sessionStorage.setItem('history', history);
 
           this.setState(()=>{
             return {
-              flags : tempFlagList
+              flags : this.state.flags,
+              countries : this.state.countries,
             }
           });
-
-        }
-        onFlagDrag(idx, ev) {
-          this.currentFlagDrag = idx;
         }
 
+        nameDrag(idx, ev) {
+          this.draggedCountryIdx = idx;
+        }
       }
 
       ReactDOM.render(
