@@ -42,10 +42,9 @@
     
       .flagMatched {
         background-color : green;
-        color : white;
-        
+        color : white;        
       }
-
+ 
       .droppedName {
         width : 100%;
         margin : 0px;
@@ -94,8 +93,13 @@
               }
 
               const [countryIdx, flagIdx] = savedMatch.split(',');
-              state.countries[countryIdx].paired = true;
-              state.flags[flagIdx].countryIdx = countryIdx;
+              const country = state.countries[countryIdx];
+              const flag = state.flags[flagIdx];
+
+              country.paired = true;
+              flag.countryIdx = countryIdx;
+              flag.matched = (country.cc + '.png' === flag.src)
+
             } );
           
           this.state = state;
@@ -140,10 +144,12 @@
         undoClick( e ) {
           const history = sessionStorage.getItem('history').split('|');
           const [countryIdx, flagIdx] = history[ history.length-1 ].split(',');
+          const country = this.state.countries[ countryIdx];
+          const flag = this.state.flags[ flagIdx ];
 
-          this.state.countries[ countryIdx ].paired = false;
-          this.state.flags[ flagIdx ].countryIdx = -1;
-          this.state.flags[ flagIdx ].matched = false;
+          country.paired = false;
+          flag.countryIdx = -1;
+          flag.matched = false;
 
           const newHistory = history.splice(0, history.length -1).join('|');
           sessionStorage.setItem('history', newHistory);
@@ -162,15 +168,14 @@
           const draggedCountryIdx =this.draggedCountryIdx;
           const droppedFlagIdx = idx;
 
-          this.state.countries[draggedCountryIdx].paired = true;
-          this.state.flags[droppedFlagIdx].countryIdx = draggedCountryIdx;
-          const countryCode = this.state.countries[draggedCountryIdx].cc
-          const imageFileName = this.state.flags[droppedFlagIdx].src;
+          const country = this.state.countries[draggedCountryIdx];
+          const flag = this.state.flags[droppedFlagIdx];
 
-          console.log(132, this.state.flags[droppedFlagIdx], this.state.countries[draggedCountryIdx]);
-//console.log(126, countryCode, imageFileName, (countryCode + '.png' === imageFileName) );
+          country.paired = true;
+          flag.countryIdx = draggedCountryIdx;
+//console.log(132, flag, country);
 
-          this.state.flags[droppedFlagIdx].matched = (countryCode + '.png' === imageFileName);
+          flag.matched = (country.cc + '.png' === flag.src);
 
           var history = sessionStorage.getItem('history') || '';          
           history += '|' + draggedCountryIdx + ',' + droppedFlagIdx
