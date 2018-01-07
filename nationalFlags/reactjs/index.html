@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>National flags</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <script src="../countries.js"></script>
+    <script src="../flags.js"></script>
+    <style type="text/css">
+      .droppedFlag {
+        height : 50;
+        width : 500px;
+        border : solid 1px;
+      }
+
+      .navControl {
+        height:100%;
+        background-color:red;
+        vertical-align:center;
+      }
+
+      .countryPane {
+        display:grid;
+        grid-template-columns:1fr 98fr 1fr;
+        margin-bottom : 20px;
+      }
+
+      .country {
+        display:inline-block;
+        padding : 2px;
+        border: solid gray 2px;
+        margin : 2px;
+      }
+
+      .scrollableCountry {
+        height: 35px;
+        overflow-x: hidden;
+        border: 1px solid red;
+      }
+
+      .innerCountry {
+        width:20000px;
+      }
+
+      .flagPane {
+        display: grid;
+      }
+
+      .flag {
+        display:inline-block;
+        padding : 2px;
+        border : solid gray 2px;
+        margin : 2px;
+        vertical-align: top;
+      }
+
+      .scrollableFlags {
+        height:170px;
+        overflow-x :hidden;
+        border: 1px solid blue;
+        width:100%
+      }
+
+      .innerFlag {
+        width:28350px;
+      }
+    
+      .droppedName {
+        width : 100%;
+        margin : 0px;
+        padding : 0px;
+        border : solid 1px;
+        text-align : center;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Flags from https://github.com/hjnilsson/country-flags/tree/master/png100px -->
+    <!-- Country names from https://www.state.gov/misc/list/ -->
+
+    <div id="flagsApp"> 
+    </div>
+
+    <script type="text/babel">
+      class Flags  extends React.Component{
+        constructor (props ) {
+          super(props)
+          this.props = props;
+          this.state = {
+            countries : countries.map((n) => ({ name : n })),
+            flags : flags.map((f) => ({ src : f, name : ""})),
+          }
+          this.onFlagDrop= this.onFlagDrop.bind(this);
+        }
+
+        render () {
+          return <div>
+            <div id="countryContainer" className="countryPane">
+              <div className="navControl"><div>&nbsp;&gt;&nbsp; </div></div>
+              <div className="scrollableCountry"><div className="innerCountry">{this.state.countries.map( (c, idx) => <div className="country" key={idx}>{c.name}</div>)}</div></div>
+              <div> <span className="navControl"> &nbsp;&gt;&nbsp; </span></div>
+            </div>
+
+            <div id="flagContainer" className="flagPane"> 
+              <div> <div className="navControl"> &nbsp;&gt;&nbsp; </div></div>
+              <div className="scrollableFlags" id="flagContainer"><div className="innerFlag">
+                {this.state.flags.map( (f, idx ) => { 
+                  return <div className="flag" 
+                      key={idx} 
+                      draggable="true" 
+                      onDrag={(ev) => this.onFlagDrag(idx, ev)} >
+                    <div><img  src={"../flags/" + f.src}/> </div>
+                    <div className="droppedName"> {" ell" + f.name} </div>
+                  </div>}
+                )}
+              </div></div>
+              <div> <div className="navControl"> &nbsp;&gt;&nbsp; </div></div>
+            </div>
+          </div>
+        }
+        onFlagDrop(idx, ev) {
+          const from =this.currentFlagDrag;
+          const to = idx;
+
+          this.state.countries[idx].flagSrc = this.state.flags[from];
+          const tempFlagList = this.state.flags.concat([]);
+          const temp = tempFlagList[to];
+          tempFlagList[to] = tempFlagList[from];
+          tempFlagList[from] = temp;
+
+          this.setState(()=>{
+            return {
+              flags : tempFlagList
+            }
+          });
+
+        }
+        onFlagDrag(idx, ev) {
+          this.currentFlagDrag = idx;
+        }
+
+      }
+
+      ReactDOM.render(
+        <Flags/>,
+        document.getElementById('flagsApp')
+      );
+
+    </script>
+  </body>
+</html>
