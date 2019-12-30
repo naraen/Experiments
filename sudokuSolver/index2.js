@@ -33,7 +33,8 @@ var input_easy2=`000260701
 703018000
 `
 
-var input_70=`950000600
+var input_70= {
+  input : `950000600
 000085097
 800020100
 009032060
@@ -42,12 +43,10 @@ var input_70=`950000600
 003070001
 470190000
 008000076
-`;
+`, hints : [
 
-var hints_70 = [
-  [69,6],
-  [73,5]
 ]
+};
 
 //easy solve
 var input_90=`007000000
@@ -73,8 +72,8 @@ var inputWithHints_64= {
 200060830
 `, 
   hints :[
-    [1,3], //3,5
-    [76,1], //15
+//    [1,3], //3,5
+//    [76,1], //15
   ]
 };
 
@@ -90,21 +89,11 @@ var medium_81 = {
 000200070
   `,
   hints: [
-    [1,9], //79
-    [73,5] //58
+//    [1,9], //79
+//    [73,5] //58
   ]
 }
-var x =`
-871345926
-[359][3459][59]72[169][458][13458][1348]
-[2359][3459]6[89][189][19][458]7[1348]
-[1239][1389][289][49][379][379]6[13489]5
-[359][3589][589]1[3679]2[478][3489][34789]
-764[59][39]82[139][139]
-[159][1589][5789]6[1789][179]3[4589][24789]
-42[5789][89][13789][1379][578][5689][789]
-[69][89]3[289]541[689][2789]
-`
+
 
 var hard_98 = {
   input : `870045020
@@ -118,12 +107,38 @@ var hard_98 = {
 003054100
 `,
   hints : [
-    [17,5],
-    [29,3],
-    [62,4]
   ]
 }
-var inputWithHints = hard_98//medium_81;
+
+var level5_127 = {
+  input : `023060000
+  000010603
+  500042900
+  000036450
+  800070006
+  064590000
+  001620004
+  302050000
+  000080530
+`,
+  hints : [
+  ]
+}
+
+var hard_128 = {
+  input : `000000200
+  000020030
+  205190006
+  000014063
+  030000070
+  420930000
+  100062509
+  060050000
+  004000000
+  `,
+  hints : []
+}
+var inputWithHints = hard_128;//medium_81;
 var input = inputWithHints.input;
 var hints =inputWithHints.hints;
 
@@ -131,6 +146,7 @@ var hints =inputWithHints.hints;
 /* setup */
 const availableNumbers = '123456789';
 const availableNumbersAsArray = availableNumbers.split("");
+
 const cells = [...Array(81).keys()];
 const rows=[], cols=[], boxes=[];
 const setForEachCell = generateSetForEachCell();
@@ -142,11 +158,11 @@ const constraintSets = generateConstraintSets();
 var workingSet = createWorkingSet();
 var workingSet2 = createWorkingSet2();
 var solvedCells = convertInputIntoSolveArray(input);
+
 iterate();
 
 var output = formatWorkingSetForDisplay();
 console.log(output);
-console.log(workingSet2['r8']['7']);
 
 function generateSetForEachCell() {
   return cells.map( (c) => {
@@ -162,7 +178,7 @@ function generateSetForEachCell() {
 }
 
 function generateConstraintSets() {
-  var constraintSetsTemp={};
+  var constraintSetsTemp = {};
 
   cells.forEach( (c) => {
     var row = setForEachCell[c].row;
@@ -206,6 +222,23 @@ function createWorkingSet() {
     .map( (c) => convertArrayToObject(availableNumbersAsArray, ()=>"") );
 }
 
+function createWorkingSet2() {
+  var thisSetFunc = (cellIndices) => convertArrayToObject(
+    availableNumbersAsArray, 
+    () => convertArrayToObject(cellIndices, ()=> "")
+  );
+
+  var workingSet2 = {};
+
+  workingSet2 = convertArrayToObject(rows, thisSetFunc, (val, idx) => "r" + idx, workingSet2 );
+
+  workingSet2 = convertArrayToObject(cols, thisSetFunc, (val, idx) => "c" + idx, workingSet2 );
+
+  workingSet2 = convertArrayToObject(boxes, thisSetFunc, (val, idx) => "b" + idx, workingSet2 );
+
+  return workingSet2;
+}
+
 function convertInputIntoSolveArray(thisInput){
   return thisInput
     .split("")
@@ -238,10 +271,6 @@ function processExclusion(cs, thisValue) {
     });
 }
 
-function processSetValue () {
-
-}
-
 
 function getNextSolve() {
   return (solvedCells.pop() || [undefined, undefined, undefined]);
@@ -259,17 +288,16 @@ function addToSolves(cellIdx, v, isOrNot){
 
 var solvedCount=0;
 function iterate() {
-  console.log("In the beginning ", Object.keys(workingSet2['r8']['7']).join(","))
   var hintsAvailable=true;
 
   solvedCount=solvedCells.length;
 
   var [c, thisValue, isOrNot]=solvedCells.pop();
   var iterationCount=0;
-  var bContinue=true;
+  var bAbort=false;
 
-  while (c !== undefined && solvedCount < 81 && bContinue) {
-    if (isOrNot !== "is" /*&& typeof workingSet[c] !== 'string'*/) {
+  while (c !== undefined && solvedCount < 81 && !bAbort) {
+    if (isOrNot !== "is" ) {
       processExclusion(c, thisValue);
       [c, thisValue, isOrNot ] = getNextSolve();;
       continue;
@@ -292,14 +320,14 @@ function iterate() {
     }
 
     constraintSets[c].forEach( (cs) => {
-      if (!bContinue) return;
+      if (bAbort) return;
 
       ++iterationCount;
 
       if (typeof workingSet[cs] === 'string' ) {
         if (workingSet[cs] === thisValue){
           console.log("**** Conflict !!!", c, thisValue, cs);
-          bContinue=false;
+          bAbort=false;
         }
         return;
       }
@@ -320,7 +348,6 @@ function iterate() {
         addToSolves ( (h[0]-1).toString(), h[1].toString(), "is" );
         solvedCount++;
       });
-      console.log(327, solvedCells);
       [c, thisValue, isOrNot] = getNextSolve();
     }
     
@@ -328,44 +355,6 @@ function iterate() {
   console.log(107, solvedCount, solvedCells.length, iterationCount);
 }
 
-function convertArrayToObject(arr, valFunc, idxFunc, initialObject) {
-  if (valFunc === undefined) {
-    valFunc = (val, idx) => undefined;
-  }
-
-  if (idxFunc === undefined) {
-    idxFunc = (val, idx) => val;
-  }
-
-  if (initialObject === undefined ){
-    initialObject = {};
-  }
-
-  return arr.reduce( (memo, val, idx) => {
-        memo[ idxFunc(val, idx) ] = valFunc(val, idx);
-        return memo;
-      }, initialObject );
-}
-
-function createWorkingSet2() {
-  var thisSetFunc = (cellIndices) => convertArrayToObject(
-    availableNumbersAsArray, 
-    () => convertArrayToObject(cellIndices, ()=> "")
-  );
-
-  var workingSet2 = {};
-  
-  workingSet2 = convertArrayToObject(rows, thisSetFunc, (val, idx) => "r" + idx, workingSet2 );
-
-  workingSet2 = convertArrayToObject(cols, thisSetFunc, (val, idx) => "c" + idx, workingSet2 );
-
-  workingSet2 = convertArrayToObject(boxes, thisSetFunc, (val, idx) => "b" + idx, workingSet2 );
-
-  workingSet2['r8']['1']['72'] = "hello"
-
-//  console.log(workingSet2);
-  return workingSet2;
-}
 
 function formatWorkingSetForDisplay() {
   var col=0;
@@ -398,4 +387,23 @@ function formatWorkingSetForDisplay() {
 
     return memo;
   }, "=".repeat(rowWidth) + "\n");
+}
+
+function convertArrayToObject(arr, valFunc, idxFunc, initialObject) {
+  if (valFunc === undefined) {
+    valFunc = (val, idx) => undefined;
+  }
+
+  if (idxFunc === undefined) {
+    idxFunc = (val, idx) => val;
+  }
+
+  if (initialObject === undefined ){
+    initialObject = {};
+  }
+
+  return arr.reduce( (memo, val, idx) => {
+        memo[ idxFunc(val, idx) ] = valFunc(val, idx);
+        return memo;
+      }, initialObject );
 }
