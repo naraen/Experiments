@@ -138,15 +138,15 @@ const constraintSets = generateConstraintSets();
 //console.log("End of setup", rows, cols, boxes, constraintSets);
 /* end setup */
 
-var workingSet2 = createWorkingSet2();
-//console.log(workingSet2);
-//console.log(JSON.stringify(workingSet2, null, 2))
-var workingSet = loadInputIntoWorkingSet(input);
 
+var workingSet = createWorkingSet();
+var workingSet2 = createWorkingSet2();
+var solvedCells = convertInputIntoSolveArray(input);
 iterate();
 
 var output = formatWorkingSetForDisplay();
 console.log(output);
+console.log(workingSet2['r8']['7']);
 
 function generateSetForEachCell() {
   return cells.map( (c) => {
@@ -201,93 +201,129 @@ function generateConstraintSets() {
   ); 
 }
 
-function loadInputIntoWorkingSet(thisInput) {
-  /* prepare input */
+function createWorkingSet() {
+  return cells
+    .map( (c) => convertArrayToObject(availableNumbersAsArray, ()=>"") );
+}
+
+function convertInputIntoSolveArray(thisInput){
   return thisInput
     .split("")
     .filter( (c) => c !== '\n' && c!== ' ')
-//    .map( (c) => c==='0' ? availableNumbers.split("").reduce( (memo, d) => {memo[d]=""; return memo }, {}) : c);
-    .map( (c) => c==='0' ? convertArrayToObject(availableNumbersAsArray, ()=>"") : c);
+    .map( (c, idx) => [idx, c, "is"])
+    .filter( (v) => v[1] != '0');
+}
 
-  //console.log("workingSet ", input);
-  /* end prepare input */
+function processExclusion(cs, thisValue) {
+  if (typeof workingSet[cs] !== 'string') {
+    delete workingSet[cs][thisValue];
+
+    if (Object.keys(workingSet[cs]).length ===1) {
+      addToSolves(cs, Object.keys(workingSet[cs])[0], "is");
+      solvedCount++;
+    }
+  }
+
+  var theseSets = [].concat(
+    "r" + setForEachCell[cs].row,
+    "c" + setForEachCell[cs].col,
+    "b" + setForEachCell[cs].box,
+    ).forEach( (thisSet) => {
+      var tempObj = workingSet2[thisSet][thisValue];
+      delete tempObj[cs];
+
+      if (Object.keys(tempObj).length === 1) {
+        addToSolves(Object.keys(tempObj)[0], thisValue, "is")
+      }
+    });
+}
+
+function processSetValue () {
+
 }
 
 
+function getNextSolve() {
+  return (solvedCells.pop() || [undefined, undefined, undefined]);
+}
+
+function addToSolves(cellIdx, v, isOrNot){
+  if (v == 0) {
+    throw "Something went wrong";
+  }
+
+  if (typeof workingSet[cellIdx] !== 'string' ) {
+    solvedCells.push([cellIdx, v, isOrNot])
+  }
+}
+
+var solvedCount=0;
 function iterate() {
+  console.log("In the beginning ", Object.keys(workingSet2['r8']['7']).join(","))
   var hintsAvailable=true;
-  var solvedCells = [];
 
-  cells.forEach( (c) => {
-    var thisValue = workingSet[c];
+  solvedCount=solvedCells.length;
 
-    if (typeof thisValue === 'string') {
-      solvedCells.push(c);  
-    }
-  });
-  
-
-  console.log("Propagate ", solvedCells.join(","))
-  var solvedCount=solvedCells.length;
-
-  var c=solvedCells.pop();
+  var [c, thisValue, isOrNot]=solvedCells.pop();
   var iterationCount=0;
   var bContinue=true;
 
   while (c !== undefined && solvedCount < 81 && bContinue) {
-    //if (c > 0) return;
-    var thisValue = workingSet[c];
-
-    //console.log("cell ", c, typeof thisValue);
-    if (typeof thisValue !== 'string') {
-      console.log("This should never happen, because we should only be propagating solved values")
-
-      //TODO : Should we continue or abort? Continuing for now.
-      c=solvedCells.pop();
+    if (isOrNot !== "is" /*&& typeof workingSet[c] !== 'string'*/) {
+      processExclusion(c, thisValue);
+      [c, thisValue, isOrNot ] = getNextSolve();;
       continue;
     }
 
+    if (typeof workingSet[c] !== 'string' ) {
+      var currentValue = workingSet[c];
+//      console.log(268, currentValue);
+      Object.keys(currentValue).forEach( (v) => {
+        addToSolves(c, v, "is not");
+      } );
+    }
+    workingSet[c] = thisValue;
 
-    //console.log('****** here', thisValue, constraintSets[c].join(","));
+    if (typeof thisValue !== 'string') {
+      console.log("This should never happen, because we should only be propagating solved values");
+      //TODO : Should we continue or abort? Continuing for now.
+      [c, thisValue, isOrNot ] = getNextSolve();
+      continue;
+    }
+
     constraintSets[c].forEach( (cs) => {
       if (!bContinue) return;
 
       ++iterationCount;
-       //console.log("here 86", cs)
+
       if (typeof workingSet[cs] === 'string' ) {
         if (workingSet[cs] === thisValue){
-          console.log("**** Conflict !!!");
+          console.log("**** Conflict !!!", c, thisValue, cs);
           bContinue=false;
         }
         return;
       }
 
-      //console.log("here 90", thisValue, Object.keys(workingSet[cs]).join(""))
       if (workingSet[cs][thisValue] === undefined) {
         return;
       }
 
-      //console.log("   *** Deleting ", thisValue, " from cell ", cs, " because of cell ", c);
-      delete workingSet[cs][thisValue];
-      if (Object.keys(workingSet[cs]).length ===1) {
-        //console.log("Solved", cs, workingSet[cs])
-        workingSet[cs] = Object.keys(workingSet[cs])[0];
-        solvedCells.push(cs);
-        solvedCount++;
-      }
+      addToSolves(cs, thisValue, "is not");
     });
 
-    c=solvedCells.pop();
+    [c, thisValue, isOrNot] = getNextSolve();
+    
     if (c === undefined && hintsAvailable) {
       hintsAvailable = false;
 
       hints.forEach( (h) => {
-        workingSet[h[0]-1]=h[1].toString();
-        solvedCells.push(h[0]-1);
+        addToSolves ( (h[0]-1).toString(), h[1].toString(), "is" );
         solvedCount++;
-      })
-      c=solvedCells.pop();
+      });
+      console.log(327, solvedCells);
+      [c, thisValue, isOrNot] = getNextSolve();
     }
+    
   }
   console.log(107, solvedCount, solvedCells.length, iterationCount);
 }
@@ -314,16 +350,16 @@ function convertArrayToObject(arr, valFunc, idxFunc, initialObject) {
 function createWorkingSet2() {
   var thisSetFunc = (cellIndices) => convertArrayToObject(
     availableNumbersAsArray, 
-    () => convertArrayToObject(cellIndices)
+    () => convertArrayToObject(cellIndices, ()=> "")
   );
 
   var workingSet2 = {};
   
   workingSet2 = convertArrayToObject(rows, thisSetFunc, (val, idx) => "r" + idx, workingSet2 );
 
-  //workingSet2 = convertArrayToObject(cols, thisSetFunc, (val, idx) => "c" + idx, workingSet2 );
+  workingSet2 = convertArrayToObject(cols, thisSetFunc, (val, idx) => "c" + idx, workingSet2 );
 
-  //workingSet2 = convertArrayToObject(boxes, thisSetFunc, (val, idx) => "b" + idx, workingSet2 );
+  workingSet2 = convertArrayToObject(boxes, thisSetFunc, (val, idx) => "b" + idx, workingSet2 );
 
   workingSet2['r8']['1']['72'] = "hello"
 
