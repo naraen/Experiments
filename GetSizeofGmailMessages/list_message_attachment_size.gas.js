@@ -4,14 +4,13 @@ function list_sender_count() {
   var batch_size=get_requested_batch_size();
   var ending_point=get_requested_ending_point();
 
-  console.log("Starting point=" + starting_point);
-  console.log("Batch Size=" + batch_size);
-  console.log("Ending point=" + ending_point);
-
+  console.log(`Starting Point=${starting_point}, Batch Size=${batch_size}, Ending Point=${ending_point}`);
+  
   var processed_count=starting_point;
   for(idx=starting_point; idx<ending_point; idx=idx + batch_size) {
     console.log(idx);
-    var inbox_threads = GmailApp.getInboxThreads(idx, batch_size);
+    //var inbox_threads = GmailApp.getInboxThreads(idx, batch_size);
+    var inbox_threads=GmailApp.search('has:attachment larger:2M', idx, batch_size);
 
     var senders = get_senders_from_messages_in_thread(idx, inbox_threads);
     save_sender_list(senders);
@@ -33,6 +32,8 @@ function get_senders_from_messages_in_thread(startSeq, threads){
   for (var i = 0; i < threads.length; i++) {
     var threadId=threads[i].getId();
     var message = threads[i].getMessages();
+    var permalink=threads[i].getPermalink();
+    
     for (var x = 0; x < message.length; x++) {
       var messageSender = message[x].getFrom();
       var messageId=message[x].getId()
@@ -43,7 +44,7 @@ function get_senders_from_messages_in_thread(startSeq, threads){
       messageAttachments.forEach((attachment)=> {
         attachmentsTotalSize+=attachment.getSize()/1000/1000;
       });
-      sender_array.push([startSeq + i, threadId, messageId, messageDate, messageSender, messageSubject, attachmentsTotalSize]);      
+      sender_array.push([startSeq + i, threadId, messageId, messageDate, messageSender, messageSubject, attachmentsTotalSize, permalink]);      
     }
   }
 
@@ -53,13 +54,13 @@ function get_senders_from_messages_in_thread(startSeq, threads){
 function set_header(){
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('sheet1');
-  sheet.getRange(1, 1,1, 7).setValues([['#','ThreadId','MessageId', 'Date', 'Sender', 'Subject', 'AttachmentSize']]);
+  sheet.getRange(1, 1,1, 8).setValues([['#','ThreadId','MessageId', 'Date', 'Sender', 'Subject', 'AttachmentSize(in MB)', 'Link']]);
 }
 
 function save_sender_list(sender_list){
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('sheet1');
-  sheet.getRange(sheet.getLastRow()+1, 1, sender_list.length, 7).setValues(sender_list);
+  sheet.getRange(sheet.getLastRow()+1, 1, sender_list.length, 8).setValues(sender_list);
   SpreadsheetApp.flush();
 }
 
@@ -73,20 +74,17 @@ function save_starting_point(currentStartingPoint){
 function get_requested_starting_point(){
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('TrackingSheet');
-  var x = sheet.getRange(1, 2, 1,1).getValue();
-  return x;
+  return sheet.getRange(1, 2, 1,1).getValue();
 }
 
 function get_requested_batch_size(){ 
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('TrackingSheet');
-  var x = sheet.getRange(2, 2, 1,1).getValue();
-  return x;
+  return sheet.getRange(2, 2, 1,1).getValue();
 }
 
 function get_requested_ending_point(){
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('TrackingSheet');
-  var x = sheet.getRange(3, 2, 1,1).getValue();
-  return x;
+  return sheet.getRange(3, 2, 1,1).getValue();
 }
