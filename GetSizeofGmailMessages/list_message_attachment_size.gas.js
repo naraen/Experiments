@@ -1,16 +1,16 @@
 function list_sender_count() {
   set_header();
-  var starting_point=get_requested_starting_point();
-  var batch_size=get_requested_batch_size();
-  var ending_point=get_requested_ending_point();
+  var batch_definition = get_batch_definition();
+  console.log(`Batch definition ${batch_definition}`);
 
-  console.log(`Starting Point=${starting_point}, Batch Size=${batch_size}, Ending Point=${ending_point}`);
-  
+  var [batch_id, starting_point, batch_size, ending_point, search_criteria]= batch_definition;
+  console.log(JSON.stringify({batch_id, starting_point, batch_size, ending_point, search_criteria}));
+
   var processed_count=starting_point;
   for(idx=starting_point; idx<ending_point; idx=idx + batch_size) {
     console.log(idx);
     //var inbox_threads = GmailApp.getInboxThreads(idx, batch_size);
-    var inbox_threads=GmailApp.search('has:attachment larger:2M', idx, batch_size);
+    var inbox_threads=GmailApp.search(search_criteria, idx, batch_size);
 
     var senders = get_senders_from_messages_in_thread(idx, inbox_threads);
     save_sender_list(senders);
@@ -67,24 +67,12 @@ function save_sender_list(sender_list){
 function save_starting_point(currentStartingPoint){
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('TrackingSheet');
-  sheet.getRange(1, 2, 1,1).setValue(currentStartingPoint);
+  sheet.getRange(2, 2, 1,1).setValue(currentStartingPoint);
   SpreadsheetApp.flush();
 }
 
-function get_requested_starting_point(){
+function get_batch_definition(){ 
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('TrackingSheet');
-  return sheet.getRange(1, 2, 1,1).getValue();
-}
-
-function get_requested_batch_size(){ 
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = spreadsheet.getSheetByName('TrackingSheet');
-  return sheet.getRange(2, 2, 1,1).getValue();
-}
-
-function get_requested_ending_point(){
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = spreadsheet.getSheetByName('TrackingSheet');
-  return sheet.getRange(3, 2, 1,1).getValue();
+  return sheet.getRange(2, 1, 1,5).getValues()[0];
 }
