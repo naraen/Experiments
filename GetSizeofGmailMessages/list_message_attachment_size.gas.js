@@ -58,6 +58,9 @@ function set_header(){
 }
 
 function save_sender_list(sender_list){
+  if (sender_list.length==0) {
+    return;
+  }
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('sheet1');
   sheet.getRange(sheet.getLastRow()+1, 1, sender_list.length, 8).setValues(sender_list);
@@ -76,3 +79,4 @@ function get_batch_definition(){
   var sheet = spreadsheet.getSheetByName('TrackingSheet');
   return sheet.getRange(2, 1, 1,5).getValues()[0];
 }
+
