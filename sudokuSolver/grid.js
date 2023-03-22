@@ -128,8 +128,7 @@
     
     _self.initGrid = ( input ) => {
       var cleanInput = input
-        .replace(/\n/g, '')
-        .replace(/ /g, '')
+        .replace(/[\n\t ]/g, '')
         .split('');
       
       cleanInput
@@ -152,7 +151,6 @@
               return obj;
             }, acc);
       }
-
 
       var currList = pendingActionList
         var action = currList.pop();
