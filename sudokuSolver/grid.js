@@ -133,6 +133,21 @@
       return rowVals;
 
     };
+
+    _self.getGridForSimpleDisplay = () => {
+      var rowVals = '';
+      for ( var idx = 0; idx < 81; idx++ ) {
+
+        if ( idx % 9 === 0 ) {
+          rowVals += '\n';
+        }
+
+        rowVals += '|'
+        rowVals += _self.grid[ idx ];
+      }
+      return rowVals;
+
+    };
     
     _self.initGrid = ( input ) => {
       var cleanInput = input

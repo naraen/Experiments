@@ -8,9 +8,15 @@
 
     var thisGrid = new Grid();
       thisGrid.initGrid(thisTest.input);
+
+      (thisTest.hints || [] )
+      	.forEach( (h) => {
+          thisGrid.grid[h[0]].setValue(h[1])
+      	  });
+
       thisGrid.sanitizeCandidates();
 
-      expect(thisGrid.getGridForDisplay()).toBe(thisTest.expected);
+      expect(thisGrid.getGridForSimpleDisplay()).toBe(thisTest.expected);
     });
 
   });

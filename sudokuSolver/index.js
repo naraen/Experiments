@@ -62,7 +62,7 @@ var input5 = `
 080216000
 000040910
 `
-var input = input2
+var input = input5
   thisGrid.initGrid(input);
   //console.log( 'Inititalized grid' );
 
@@ -76,9 +76,10 @@ var input = input2
 
   //provide hints
   [
+  	//[7, 3] , [3, 7]
     //[7, '3'], [6, '1']
     //[53, '9']
-    [53, '9']
+    //[35, '9']
   ].forEach( (h) => thisGrid.grid[h[0]].setValue(h[1]));
 
   
@@ -89,7 +90,7 @@ var input = input2
   //TODO: propagate with shared tuples. 
   thisGrid.sanitizeCandidates();
 
-  var solvedGrid = thisGrid.getGridForDisplay();
+  var solvedGrid = thisGrid.getGridForSimpleDisplay();
   var isCorrect = thisGrid.checkForCorrectness();
   console.log(solvedGrid);
   console.log (isCorrect? "Correct" : "Not Correct");
