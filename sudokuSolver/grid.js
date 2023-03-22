@@ -6,7 +6,7 @@
   function Cell ( idx ) {
     var _self = this;
 
-    _self.candidates = '123456789';
+    _self.candidates = 123456789;
     _self.isSolved = false;
     
     _self.setValue = (val) => {
@@ -16,9 +16,9 @@
     }
 
     _self.setValue_shadow = ( val ) => { 
-      _self.candidates = val;
+      _self.candidates = parseInt(val);
 
-      _self.isSolved = (_self.candidates.length === 1);
+      _self.isSolved = (_self.candidates.toString().length === 1);
 
       if (_self.isSolved)  {
         //console.log(tabLevel.join('') + '*** Solved', idx, val);
@@ -27,7 +27,7 @@
     };
     
     _self.toString = () => {
-      return '|' + _self.candidates.toString().replace(/,/g,'');
+      return _self.candidates;
     }
 
     _self.removeCandidate= (val) => {
@@ -37,12 +37,12 @@
     }
 
     _self.removeCandidate_shadow = ( val ) => {
-      if (_self.candidates == val) {
-        //console.log(tabLevel.join(''), '***', val, 'from', idx, 'Problem.  Halting!');
+      if (_self.candidates == parseInt(val) ) {
+        console.log(tabLevel.join(''), '***', val, 'from', idx, 'Problem.  Halting!');
         return null;
       }
 
-      if (_self.candidates.indexOf(val) === -1 ){
+      if (_self.candidates.toString().indexOf(val) === -1 ){
         //console.log(tabLevel.join(''), '***', val, 'from', idx, 'Already removed. NoOp')
         return null;
       }
@@ -53,7 +53,7 @@
       }
 
       //console.log(tabLevel.join(''), '***', val, 'from', idx, 'Removing:', _self.candidates, _self.candidates.replace(val,''));
-      _self.setValue(_self.candidates.replace(val,''));
+      _self.setValue(_self.candidates.toString().replace(val,''));
     };
   }
 
@@ -116,11 +116,19 @@
     _self.getGridForDisplay = () => {
       var rowVals = '';
       for ( var idx = 0; idx < 81; idx++ ) {
-        if ( idx % 9 === 0 ) {
-          rowVals += '\n';
+
+
+        if ( idx % 27 === 0 ) {
+          rowVals += '\n  =====================================';
         }
+        if ( idx % 9 === 0 ) {
+          rowVals += '\n|| ';
+        }
+
         rowVals += _self.grid[ idx ];
+        rowVals += (idx % 3 === 2) ? ' || ' : ' | '
       }
+      rowVals += '\n  =====================================';
 
       return rowVals;
 
@@ -140,6 +148,23 @@
           _self.grid[ idx ].setValue( val );
         });
     };
+
+    _self.checkForCorrectness = () => {
+      var allSets = [];
+      allSets = allSets.concat(_self.rows);
+      allSets = allSets.concat(_self.cols);
+      allSets = allSets.concat(_self.boxs);
+
+      var isCorrect = true;
+      allSets.forEach( (thisSet, setIdx) => {
+        var thisSum = thisSet.reduce( (sum, gridIdx) => sum + _self.grid[ gridIdx ], 0);
+        if (thisSum !== 45) {
+          isCorrect = false;
+        }
+      });
+
+      return isCorrect;
+    }
 
     _self.sanitizeCandidates = () => {
       var arrToObject = (arr, idx, acc) =>  {

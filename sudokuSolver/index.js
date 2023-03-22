@@ -51,7 +51,18 @@ var input4=`000000200
   060050000
   004000000
   `
-var input = input3
+var input5 = `
+042060000
+000489020
+800020700
+100000300
+250070041
+008000002
+007090003
+080216000
+000040910
+`
+var input = input2
   thisGrid.initGrid(input);
   //console.log( 'Inititalized grid' );
 
@@ -63,7 +74,14 @@ var input = input3
 //  console.log("\ncols", thisGrid.cols.toString());
   /********* Need to convert this into unit tests  */
 
-//  thisGrid.grid[ 72 ].setValue( '5' ) //provide hints
+  //provide hints
+  [
+    //[7, '3'], [6, '1']
+    //[53, '9']
+    [53, '9']
+  ].forEach( (h) => thisGrid.grid[h[0]].setValue(h[1]));
+
+  
 
   //propagate solved cells.   DONE
   //TODO: stop visiting solved cells.
@@ -72,7 +90,9 @@ var input = input3
   thisGrid.sanitizeCandidates();
 
   var solvedGrid = thisGrid.getGridForDisplay();
+  var isCorrect = thisGrid.checkForCorrectness();
   console.log(solvedGrid);
+  console.log (isCorrect? "Correct" : "Not Correct");
 
 
 }());
