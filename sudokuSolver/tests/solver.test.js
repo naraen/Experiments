@@ -2,19 +2,15 @@
   const Grid = require('../grid.js');
   const testData = require('./solverTestData.js');
 
+//  var testData1 = [ testData[1] ]
   testData.forEach ( (thisTest) => {
 
     test(thisTest.desc, () => {
 
-    var thisGrid = new Grid();
+      var thisGrid = new Grid();
       thisGrid.initGrid(thisTest.input);
-
-      (thisTest.hints || [] )
-      	.forEach( (h) => {
-          thisGrid.grid[h[0]].setValue(h[1])
-      	  });
-
-      thisGrid.sanitizeCandidates();
+      if (!thisGrid.isSolved())  thisGrid.findSingleCandidates();
+      if (!thisGrid.isSolved()) thisGrid.useHints(thisTest.hints || []);
 
       expect(thisGrid.getGridForSimpleDisplay()).toBe(thisTest.expected);
     });
