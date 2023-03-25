@@ -5,14 +5,12 @@
 
   const Grid = require("./grid.js");
 
-  var thisGrid = new Grid();
-
-  //propagate solved cells.   DONE
+  //propagate solved cells.   Done
   //TODO: stop visiting solved cells. Done
   //TODO: find unique value in set.  Done
   //TODO: propagate with shared tuples.
-  //TODO : use brute force.
-  //TODO: emit hints
+  //TODO : use brute force. - Done
+  //TODO: emit hints - Done
 
   var inputs = [];
 
@@ -20,8 +18,7 @@
 
   inputs.forEach((thisTest) => {
     console.log("*******", thisTest.desc, "*********");
-    var thisGrid = new Grid();
-    thisGrid.initGrid(thisTest.input);
+    var thisGrid = new Grid(thisTest.input);
 
     if (!thisGrid.isSolved()) {
       console.log("Not solved.  Trying to identify single candidates");
@@ -34,8 +31,9 @@
     }
 
     if (!thisGrid.isSolved()) {
-      console.log("Not solved.   Using Brute force");
-      //thisGrid.useBruteForce()
+      console.log("Not solved.  Using Brute force");
+      var hints = thisGrid.useBruteForce();
+      console.log("Found hints", JSON.stringify(hints));
     }
 
     var solvedGrid = thisGrid.getGridForSimpleDisplay();

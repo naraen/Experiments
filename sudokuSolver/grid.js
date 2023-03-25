@@ -115,7 +115,7 @@
     }
   }
 
-  function Grid() {
+  function Grid(input) {
     var _self = this;
 
     var thisGrid = null;
@@ -237,7 +237,7 @@
       return rowVals;
     };
 
-    _self.initGrid = (input) => {
+    function initGrid(input) {
       setupEmptyGrid();
 
       var cleanInput = input.replace(/[\n\t ]/g, "").split("");
@@ -249,7 +249,7 @@
 
         thisGrid[idx].setValue(val);
       });
-    };
+    }
 
     _self.isSolved = () => solvedCellCount === 81;
 
@@ -268,7 +268,7 @@
       );
     }
 
-    _self.useBruteForce = () => {
+    _self.useBruteForce = (isDebug) => {
       var stash = [];
       var thisState = null;
       var firstUnsolvedPosition = null;
@@ -283,22 +283,20 @@
             gridIdx: firstUnsolvedPosition,
             number: num,
             state: thisState,
+            hints: [[firstUnsolvedPosition, num]],
             tabLevel: "",
           };
           stash.push(valueToTry);
         });
 
       var loopCount = 50;
+      var hint = null;
       while (!_self.isSolved() && stash.length > 0 && loopCount > 0) {
         loopCount--;
-        var hint = stash.pop();
-        console.log(
-          hint.tabLevel,
-          `trying ${hint.gridIdx} = ${hint.number}`,
-          JSON.stringify(hint)
-        );
+        hint = stash.pop();
+        isDebug && console.log("Trying :", JSON.stringify(hint.hints));
 
-        _self.initGrid(hint.state);
+        initGrid(hint.state);
         thisGrid[hint.gridIdx].setValue(hint.number);
         _self.findSingleCandidates();
 
@@ -313,12 +311,20 @@
                 gridIdx: firstUnsolvedPosition,
                 number: num,
                 state: thisState,
+                hints: [...hint.hints, [firstUnsolvedPosition, num]],
                 tabLevel: hint.tabLevel + "\t",
               };
               stash.push(valueToTry);
             });
         }
       }
+
+      isDebug &&
+        console.log(
+          "Hints :",
+          _self.isSolved() ? hint.hints : "Couldn't generate hints"
+        );
+      return _self.isSolved() ? hint.hints : [];
     };
 
     _self.findSingleCandidates = (isDebug) => {
@@ -379,8 +385,7 @@
         (gridIdx) => !isHalted && thisGrid[gridIdx].removeCandidate(cellValue)
       );
     };
-
-    _self.sanitizeCandidates = () => {};
+    initGrid(input);
   }
 
   var tabLevel = [];
