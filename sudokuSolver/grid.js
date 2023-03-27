@@ -449,30 +449,5 @@
     }, {});
   }
 
-  function testThings() {
-    testIfCorrect();
-  }
-
-  function testIfCorrect() {
-    var inputString = `439672815
-781395264
-562841397
-897463521
-124957683
-653128479
-315786942
-976234158
-248519736`;
-    isDebugLogging = true;
-    var testGrid = new Grid(inputString);
-    console.log(testGrid.gridSerializeForDisplay());
-    console.log(
-      "Test if correct",
-      inputString,
-      solvedCellCount,
-      testGrid.checkForCorrectness()
-    );
-  }
-
   module.exports = { grid: Grid, setLogLevel: configLogLevel, testThings };
 })();
