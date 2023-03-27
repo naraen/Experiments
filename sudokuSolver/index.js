@@ -3,8 +3,13 @@
 
   const testData = require("./tests/solverTestData.js");
 
-  const Grid = require("./grid.js");
+  const Grid = require("./grid.js").grid;
+  var gridSetLogLevel = require("./grid.js").setLogLevel;
+  //  var testHelper = require("./grid.js").testThings;
 
+  //  testHelper();
+
+  //return;
   //propagate solved cells.   Done
   //TODO: stop visiting solved cells. Done
   //TODO: find unique value in set.  Done
@@ -14,6 +19,7 @@
 
   var inputs = [];
 
+  gridSetLogLevel("No Op" /* No Op, Debug*/);
   inputs = testData;
 
   inputs.forEach((thisTest) => {

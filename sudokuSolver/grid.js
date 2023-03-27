@@ -37,359 +37,442 @@
   ];
 
   const row_colToBoxIdx = (r, c) => parseInt(r / 3) * 3 + parseInt(c / 3);
-  const row_colToGridIdx = (r, c) => r * 9 + c - 1;
-  const gridIdxToRowIdx = (i) => parseInt(i / 9);
-  const gridIdxToColIdx = (i) => i % 9;
-  const gridIdxToBoxIdx = (i) =>
-    parseInt(gridIdxToRowIdx(i) / 3) * 3 + parseInt(gridIdxToColIdx(i) / 3);
+  const row_colTocellIdx = (r, c) => r * 9 + c - 1;
+  const cellIdxToRowIdx = (i) => parseInt(i / 9);
+  const cellIdxToColIdx = (i) => i % 9;
+  const cellIdxToBoxIdx = (i) =>
+    parseInt(cellIdxToRowIdx(i) / 3) * 3 + parseInt(cellIdxToColIdx(i) / 3);
   const arrToObject = (arr, acc) =>
     arr.reduce((obj, currVal) => {
       obj[currVal] = "";
       return obj;
     }, acc);
 
+  var isDebugLogging = false;
   var isHalted = false;
-
-  function Cell(gridIdx, grid) {
-    var _self = this;
-
-    _self.candidates = 123456789;
-    _self.isSolved = false;
-
-    _self.setValue = (val) => {
-      if (isHalted) return;
-
-      tabLevel.push("\t");
-      setValue_shadow(val);
-      tabLevel.pop();
-    };
-
-    function setValue_shadow(val) {
-      if (_self.isSolved) {
-        return;
-      }
-
-      _self.candidates = parseInt(val);
-
-      _self.isSolved = _self.candidates.toString().length === 1;
-
-      if (_self.isSolved) {
-        //console.log(tabLevel.join('') + '*** Solved', gridIdx, val);
-        grid.dropSolvedCellFromUnsolvedSets(gridIdx);
-        solvedCellCount++;
-        grid.propagate(gridIdx, val);
-      }
-    }
-
-    _self.toString = () => {
-      return _self.candidates.toString();
-    };
-
-    _self.removeCandidate = (val) => {
-      tabLevel.push("\t");
-      removeCandidate_shadow(val);
-      tabLevel.pop();
-    };
-
-    function removeCandidate_shadow(val) {
-      if (_self.candidates == parseInt(val)) {
-        console.log(
-          `${tabLevel.join("")}***${val} from ${gridIdx}. Problem. Halting!`
-        );
-        isHalted = true;
-        return;
-      }
-
-      if (_self.candidates.toString().indexOf(val) === -1) {
-        //console.log(tabLevel.join(''), '***', val, 'from', gridIdx, 'Already removed. NoOp')
-        return;
-      }
-
-      if (_self.isSolved) {
-        //console.log(tabLevel.join(''), '***', val, 'from', gridIdx, 'Already solved.  Exiting')
-        return;
-      }
-
-      //console.log(tabLevel.join(''), '***', val, 'from', gridIdx, 'Removing:', _self.candidates, _self.candidates.replace(val,''));
-      _self.setValue(_self.candidates.toString().replace(val, ""));
-    }
-  }
-
-  function Grid(input) {
-    var _self = this;
-
-    var thisGrid = null;
-    _self.unsolvedSets = null;
-
-    function displayUnsolvedSets() {
-      console.log("  [");
-      _self.unsolvedSets.forEach((set, idx) => {
-        var candidates = getCellsGroupedByUnsolvedNumbers(set);
-        console.log(
-          `    ${idx + JSON.stringify(set)}  ||  ${JSON.stringify(candidates)} `
-        );
-      });
-      console.log("  ]");
-    }
-
-    function getAllSets() {
-      var allSets = [].concat(rowSet).concat(colSet).concat(boxSet);
-      var cloneOfAllSets = JSON.parse(JSON.stringify(allSets));
-      return cloneOfAllSets;
-    }
-
-    function getCellsGroupedByUnsolvedNumbers(set) {
-      return set.reduce((acc, cellIdx) => {
-        thisGrid[cellIdx].candidates
-          .toString()
-          .split("")
-          .forEach((n) => {
-            if (acc[n] === undefined) {
-              acc[n] = [];
-            }
-            acc[n].push(cellIdx);
-          });
-        return acc;
-      }, {});
-    }
-
-    function getSetsContainingACell(gridIdx) {
-      return new Array(
-        gridIdxToRowIdx(gridIdx),
-        gridIdxToColIdx(gridIdx) + 9,
-        gridIdxToBoxIdx(gridIdx) + 18
-      );
-    }
-
-    function setupEmptyGrid() {
-      thisGrid = [];
-      isHalted = false;
-      _self.unsolvedSets = getAllSets();
-      solvedCellCount = 0;
-
-      for (var idx = 0; idx < 81; idx++) {
-        var cell = new Cell(idx, _self);
-        thisGrid.push(cell);
-      }
-    }
-
-    function removeCellFromSet(set, cellIdx) {
-      var posInSet = set.indexOf(cellIdx);
-      if (posInSet === -1) return;
-
-      set.splice(posInSet, 1);
-    }
-
-    _self.checkForCorrectness = (isDebug) => {
-      var allSets = getAllSets();
-
-      var isCorrect = true;
-      allSets.forEach((thisSet, setIdx) => {
-        var thisSum = thisSet.reduce(
-          (sum, gridIdx) => sum + thisGrid[gridIdx].candidates,
-          0
-        );
-        if (thisSum !== 45) {
-          isDebug && console.log(setIdx, thisSum);
-          isCorrect = false;
-        }
-      });
-
-      return isCorrect;
-    };
-
-    _self.dropSolvedCellFromUnsolvedSets = (cellIdx) => {
-      //console.log('Dropping cell', cellIdx, getSetsContainingACell(cellIdx));
-      getSetsContainingACell(cellIdx).forEach((setIdx) => {
-        removeCellFromSet(_self.unsolvedSets[setIdx], cellIdx);
-      });
-    };
-
-    _self.getGridForDisplay = () => {
-      var rowVals = "";
-      for (var idx = 0; idx < 81; idx++) {
-        if (idx % 27 === 0) {
-          rowVals += `\n${"=".repeat(87)}`;
-        }
-        if (idx % 9 === 0) {
-          rowVals += "\n|| ";
-        }
-
-        rowVals +=
-          " ".repeat(8 - thisGrid[idx].toString().length) + thisGrid[idx];
-        rowVals += idx % 3 === 2 ? "||" : "|";
-      }
-      rowVals += `\n${"=".repeat(87)}`;
-
-      return rowVals;
-    };
-
-    _self.getGridForSimpleDisplay = () => {
-      var rowVals = "";
-      for (var idx = 0; idx < 81; idx++) {
-        if (idx % 9 === 0) {
-          rowVals += "\n";
-        }
-
-        rowVals += "|";
-        rowVals += thisGrid[idx];
-      }
-      return rowVals;
-    };
-
-    function initGrid(input) {
-      setupEmptyGrid();
-
-      var cleanInput = input.replace(/[\n\t ]/g, "").split("");
-
-      cleanInput.forEach((val, idx) => {
-        if (val == 0) {
-          return;
-        }
-
-        thisGrid[idx].setValue(val);
-      });
-    }
-
-    _self.isSolved = () => solvedCellCount === 81;
-
-    _self.unsolvedCount = () => 81 - solvedCellCount;
-
-    _self.useHints = (hints) =>
-      hints.forEach((h) => {
-        thisGrid[h[0]].setValue(h[1]);
-        _self.findSingleCandidates();
-      });
-
-    function getGridToStash() {
-      return thisGrid.reduce(
-        (acc, cell) => acc + (!cell.isSolved ? 0 : cell.candidates),
-        ""
-      );
-    }
-
-    _self.useBruteForce = (isDebug) => {
-      var stash = [];
-      var thisState = null;
-      var firstUnsolvedPosition = null;
-
-      thisState = getGridToStash();
-      firstUnsolvedPosition = thisState.indexOf(0);
-      thisGrid[firstUnsolvedPosition].candidates
-        .toString()
-        .split("")
-        .forEach((num) => {
-          var valueToTry = {
-            gridIdx: firstUnsolvedPosition,
-            number: num,
-            state: thisState,
-            hints: [[firstUnsolvedPosition, num]],
-            tabLevel: "",
-          };
-          stash.push(valueToTry);
-        });
-
-      var loopCount = 50;
-      var hint = null;
-      while (!_self.isSolved() && stash.length > 0 && loopCount > 0) {
-        loopCount--;
-        hint = stash.pop();
-        isDebug && console.log("Trying :", JSON.stringify(hint.hints));
-
-        initGrid(hint.state);
-        thisGrid[hint.gridIdx].setValue(hint.number);
-        _self.findSingleCandidates();
-
-        if (!_self.isSolved() && !isHalted) {
-          thisState = getGridToStash();
-          firstUnsolvedPosition = thisState.indexOf(0);
-          thisGrid[firstUnsolvedPosition].candidates
-            .toString()
-            .split("")
-            .forEach((num) => {
-              var valueToTry = {
-                gridIdx: firstUnsolvedPosition,
-                number: num,
-                state: thisState,
-                hints: [...hint.hints, [firstUnsolvedPosition, num]],
-                tabLevel: hint.tabLevel + "\t",
-              };
-              stash.push(valueToTry);
-            });
-        }
-      }
-
-      isDebug &&
-        console.log(
-          "Hints :",
-          _self.isSolved() ? hint.hints : "Couldn't generate hints"
-        );
-      return _self.isSolved() ? hint.hints : [];
-    };
-
-    _self.findSingleCandidates = (isDebug) => {
-      var shouldContinue = true;
-
-      while (shouldContinue && !isHalted && !_self.isSolved()) {
-        isDebug && console.log("findSingleCandidates");
-        var solvedList = [];
-        isDebug && console.log(_self.getGridForDisplay());
-        _self.unsolvedSets.forEach((set, idx) => {
-          var candidates = getCellsGroupedByUnsolvedNumbers(set);
-          isDebug && console.log(idx, "  ", JSON.stringify(candidates));
-          Object.keys(candidates).forEach((key) => {
-            isDebug &&
-              candidates[key].length === 1 &&
-              console.log(
-                "       ****",
-                key,
-                candidates[key],
-                candidates[key].length === 1
-              );
-            if (candidates[key].length === 1) {
-              var gridIdx = candidates[key][0];
-              solvedList.push({ gridIdx, key });
-            }
-          });
-        });
-
-        solvedList.forEach((solve) => {
-          isDebug &&
-            console.log(
-              "    ",
-              "    ",
-              "**** Setting cell ",
-              solve.gridIdx,
-              " to ",
-              solve.key
-            );
-          thisGrid[solve.gridIdx].setValue(solve.key);
-        });
-        shouldContinue = solvedList.length > 0;
-      }
-      isDebug && console.log("Unsolved ", _self.unsolvedCount());
-    };
-
-    _self.propagate = (gridIdx, cellValue) => {
-      if (isHalted) return;
-      var setIdxs = getSetsContainingACell(gridIdx);
-
-      var thisObj = {};
-      arrToObject(_self.unsolvedSets[setIdxs[0]], thisObj);
-      arrToObject(_self.unsolvedSets[setIdxs[1]], thisObj);
-      arrToObject(_self.unsolvedSets[setIdxs[2]], thisObj);
-
-      var propagationList = Object.keys(thisObj);
-      //console.log(action, ' to ',  propagationList.toString());
-      propagationList.forEach(
-        (gridIdx) => !isHalted && thisGrid[gridIdx].removeCandidate(cellValue)
-      );
-    };
-    initGrid(input);
-  }
-
+  var cellValue = Array(81).fill(123456789);
+  var unsolvedSets = null;
   var tabLevel = [];
   var solvedCellCount = 0;
 
-  module.exports = Grid;
+  function configLogLevel(logLevel) {
+    isDebugLogging = logLevel === "Debug";
+  }
+
+  function cellGetValueAsString(cellIdx) {
+    if (isNaN(cellIdx))
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+    return cellValue[cellIdx].toString();
+  }
+
+  function cellIsSolved(cellIdx) {
+    if (isNaN(cellIdx))
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+    return cellValue[cellIdx] < 10 && cellValue[cellIdx] > 0;
+  }
+
+  function cellIsValueACandidate(cellIdx, candidateValue) {
+    if (isNaN(cellIdx))
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+    if (isNaN(candidateValue))
+      throw new Error(
+        `candidateValue: Expected number, was ${typeof candidateValue}`
+      );
+
+    return (
+      cellGetValueAsString(cellIdx).toString().indexOf(candidateValue) !== -1
+    );
+  }
+
+  function cellRemoveCandidate(cellIdx, valueToRemove) {
+    tabLevel.push("\t");
+    const diagInfo = `${tabLevel.join(
+      ""
+    )} cellRemoveCandidate( cellIdx=${cellIdx}, value=${valueToRemove} )`;
+    isDebugLogging &&
+      console.log(diagInfo, `Entering.  Current value  ${cellValue[cellIdx]}`);
+
+    if (isNaN(cellIdx))
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+    if (isNaN(valueToRemove))
+      throw new Error(
+        `valueToRemove: Expected number, was ${typeof valueToRemove}`
+      );
+
+    if (cellValue[cellIdx] == parseInt(valueToRemove)) {
+      isDebugLogging && console.log(diagInfo, `Problem. Halting!`);
+      isHalted = true;
+      tabLevel.pop();
+      return;
+    }
+
+    if (!cellIsValueACandidate(cellIdx, valueToRemove)) {
+      isDebugLogging && console.log(diagInfo, "Already removed. NoOp");
+      tabLevel.pop();
+      return;
+    }
+
+    if (cellIsSolved(cellIdx)) {
+      isDebugLogging && console.log(diagInfo, "Already solved.  Exiting");
+      tabLevel.pop();
+      return;
+    }
+
+    var cellValuesAfterRemoval = parseInt(
+      cellGetValueAsString(cellIdx).replace(valueToRemove, "")
+    );
+    isDebugLogging &&
+      console.log(
+        diagInfo,
+        `new value ${cellGetValueAsString(cellIdx).replace(valueToRemove, "")}`
+      );
+
+    cellSetValue(cellIdx, parseInt(cellValuesAfterRemoval));
+
+    tabLevel.pop();
+  }
+
+  function cellSetValue(cellIdx, value) {
+    var diagInfo = `cellSetValue ${cellIdx} = ${value}`;
+
+    if (isNaN(cellIdx) || cellIdx == undefined)
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+    if (isNaN(value) || value == undefined)
+      throw new Error(`value: Expected number, was ${typeof value}`);
+
+    isDebugLogging &&
+      console.log(diagInfo, `Entering current=${cellValue[cellIdx]}`);
+    if (isHalted || cellIsSolved(cellIdx)) return;
+
+    cellValue[cellIdx] = parseInt(value);
+    isDebugLogging && console.log(diagInfo, "new value", cellValue[cellIdx]);
+
+    if (!cellIsSolved(cellIdx)) return;
+
+    solvedCellCount++;
+    gridDropCellFromUnsolvedSets(cellIdx);
+    gridPropagateCellValueToUnsolvedSets(cellIdx, value);
+  }
+
+  function Grid(input) {
+    console.log("isLoggingEnabled", isDebugLogging);
+    var _self = this;
+
+    _self.checkForCorrectness = gridCheckForCorrectness;
+    _self.getGridForDisplay = gridSerializeForDisplay;
+    _self.getGridForSimpleDisplay = gridSerializeForSimpleDisplay;
+    _self.isSolved = gridIsSolved;
+    _self.unsolvedCount = gridUnsolvedCount;
+    _self.useHints = gridUseHints;
+
+    _self.useBruteForce = gridUseBruteForce;
+    _self.findSingleCandidates = setsFindSingleCandidates;
+
+    gridInit(input);
+  }
+
+  function gridCheckForCorrectness() {
+    const diagInfo = "checkForCorrectness";
+    var allSets = setsGetAll();
+
+    var isCorrect = true;
+    allSets.forEach((thisSet, setIdx) => {
+      var thisSum = thisSet.reduce(
+        (sum, cellIdx) => sum + parseInt(cellValue[cellIdx]),
+        0
+      );
+      if (thisSum !== 45) {
+        isDebugLogging &&
+          console.log(diagInfo, `sum of set[${setIdx}]=${thisSum}`);
+        isCorrect = false;
+      }
+    });
+
+    return isCorrect;
+  }
+
+  function gridDropCellFromUnsolvedSets(cellIdx) {
+    const diagInfo = `gridDropCellFromUnsolvedSets ( ${cellIdx} )`;
+    isDebugLogging && console.log(diagInfo, "Entering");
+
+    if (isNaN(cellIdx))
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+
+    isDebugLogging &&
+      console.log(
+        diagInfo,
+        "Dropping from sets",
+        gridGetSetsWithCellAsMember(cellIdx)
+      );
+
+    gridGetSetsWithCellAsMember(cellIdx).forEach((setIdx) => {
+      setsDropCellFromSet(setIdx, cellIdx);
+    });
+    isDebugLogging && console.log(diagInfo, "Exiting");
+  }
+
+  function gridGetSetsWithCellAsMember(cellIdx) {
+    if (isNaN(cellIdx))
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+    return new Array(
+      cellIdxToRowIdx(cellIdx),
+      cellIdxToColIdx(cellIdx) + 9,
+      cellIdxToBoxIdx(cellIdx) + 18
+    );
+  }
+
+  function gridInit(input) {
+    gridSetupEmpty();
+
+    var cleanInput = input.replace(/[\n\t \|]/g, "").split("");
+
+    cleanInput.forEach((val, idx) => {
+      if (isHalted) return;
+      if (val == 0) return;
+      isDebugLogging && console.log(`Initializing cell ${idx} to ${val}`);
+      cellSetValue(idx, val);
+    });
+  }
+
+  function gridIsSolved() {
+    return solvedCellCount === 81;
+  }
+
+  function gridPropagateCellValueToUnsolvedSets(cellIdx, cellValue) {
+    const diagInfo = `gridPropagateCellValueToUnsolvedSets(${cellIdx}, ${cellValue}):`;
+    isDebugLogging && console.log(diagInfo, "Entering");
+    if (isHalted) {
+      isDebugLogging && console.log(diagInfo, "Halted.  Not propagating");
+    }
+
+    if (isNaN(cellIdx))
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+    if (isNaN(cellValue))
+      throw new Error(`cellValue: Expected number, was ${typeof cellValue}`);
+
+    var setIdxs = gridGetSetsWithCellAsMember(cellIdx);
+    isDebugLogging &&
+      console.log(diagInfo, "Indexes of sets containing this cell", setIdxs);
+    var thisObj = {};
+    arrToObject(unsolvedSets[setIdxs[0]], thisObj);
+    arrToObject(unsolvedSets[setIdxs[1]], thisObj);
+    arrToObject(unsolvedSets[setIdxs[2]], thisObj);
+
+    var propagationList = Object.keys(thisObj);
+    isDebugLogging &&
+      console.log(diagInfo, "Unsolved cells", propagationList.toString());
+    propagationList.forEach(
+      (cellIdx) =>
+        !isHalted && cellRemoveCandidate(parseInt(cellIdx), cellValue)
+    );
+  }
+
+  function gridSerialize() {
+    return cellValue.reduce(
+      (acc, cellValue, cellIdx) =>
+        acc + (!cellIsSolved(cellIdx) ? 0 : cellGetValueAsString(cellIdx)),
+      ""
+    );
+  }
+
+  function gridSerializeForDisplay() {
+    var rowVals = "";
+    for (var idx = 0; idx < 81; idx++) {
+      rowVals += `${idx % 27 === 0 ? "\n" + "=".repeat(96) : ""}`;
+      rowVals += `${idx % 9 === 0 ? "\n||" : ""}`;
+      rowVals +=
+        " ".repeat(9 - cellGetValueAsString(idx).length) + cellValue[idx];
+      rowVals += idx % 3 === 2 ? "||" : "|";
+    }
+    rowVals += `\n${"=".repeat(96)}`;
+
+    return rowVals;
+  }
+
+  function gridSerializeForSimpleDisplay() {
+    var rowVals = "";
+    for (var idx = 0; idx < 81; idx++) {
+      if (idx % 9 === 0) {
+        rowVals += "\n";
+      }
+
+      rowVals += "|";
+      rowVals += cellGetValueAsString(idx);
+    }
+    return rowVals;
+  }
+
+  function gridSetupEmpty() {
+    isHalted = false;
+    unsolvedSets = setsGetAll();
+    solvedCellCount = 0;
+
+    cellValue = Array(81).fill(123456789);
+  }
+
+  function gridUnsolvedCount() {
+    return 81 - solvedCellCount;
+  }
+
+  function gridUseBruteForce() {
+    var stash = [];
+    var thisState = null;
+    var firstUnsolvedPosition = null;
+
+    thisState = gridSerialize();
+    firstUnsolvedPosition = thisState.indexOf(0);
+    cellGetValueAsString(firstUnsolvedPosition)
+      .split("")
+      .forEach((num) => {
+        var valueToTry = {
+          cellIdx: firstUnsolvedPosition,
+          number: num,
+          state: thisState,
+          hints: [[firstUnsolvedPosition, num]],
+          tabLevel: "",
+        };
+        stash.push(valueToTry);
+      });
+
+    var loopCount = 50;
+    var hint = null;
+    while (!isSolved() && stash.length > 0 && loopCount > 0) {
+      loopCount--;
+      hint = stash.pop();
+      isDebugLogging && console.log("Trying :", JSON.stringify(hint.hints));
+
+      gridInit(hint.state);
+      cellSetValue(hint.cellIdx, hint.number);
+      setsFindSingleCandidates();
+
+      if (!isSolved() && !isHalted) {
+        thisState = gridSerialize();
+        firstUnsolvedPosition = thisState.indexOf(0);
+        cellGetValueAsString(firstUnsolvedPosition)
+          .split("")
+          .forEach((num) => {
+            var valueToTry = {
+              cellIdx: firstUnsolvedPosition,
+              number: num,
+              state: thisState,
+              hints: [...hint.hints, [firstUnsolvedPosition, num]],
+              tabLevel: hint.tabLevel + "\t",
+            };
+            stash.push(valueToTry);
+          });
+      }
+    }
+
+    isDebugLogging &&
+      console.log(
+        "Hints :",
+        isSolved() ? hint.hints : "Couldn't generate hints"
+      );
+    return isSolved() ? hint.hints : [];
+  }
+
+  function gridUseHints(hints) {
+    hints.forEach((h) => {
+      cellSetValue(h[0], h[1]);
+      setsFindSingleCandidates();
+    });
+  }
+
+  function setsDropCellFromSet(setIdx, cellIdx) {
+    const diagInfo = `setsDropCellFromSet(setIdx=${setIdx}, cellIdx=${cellIdx})`;
+    isDebugLogging && console.log(diagInfo, `Entering`);
+
+    if (isNaN(setIdx) || setIdx == undefined)
+      throw new Error(`setIdx: Expected number, was ${typeof setIdx}`);
+    if (isNaN(cellIdx) || cellIdx == undefined)
+      throw new Error(`cellIdx: Expected number, was ${typeof cellIdx}`);
+
+    const set = unsolvedSets[setIdx];
+    isDebugLogging && console.log(diagInfo, `Set is ${JSON.stringify(set)}`);
+    var posInSet = set.indexOf(cellIdx);
+    if (posInSet === -1) {
+      isDebugLogging &&
+        console.log(diagInfo, "Cell index not in set. Nothing to remove");
+      return;
+    }
+
+    set.splice(posInSet, 1);
+    isDebugLogging &&
+      console.log(diagInfo, `Exiting.  Modified set is ${JSON.stringify(set)}`);
+  }
+
+  function setsFindSingleCandidates() {
+    var shouldContinue = true;
+
+    while (shouldContinue && !isHalted && !gridIsSolved()) {
+      isDebugLogging && console.log("setsFindSingleCandidates");
+      var solvedList = [];
+      isDebugLogging && console.log(gridSerializeForDisplay());
+      unsolvedSets.forEach((set, idx) => {
+        var candidates = setsGroupCellsByUnsolvedNumbers(set);
+        isDebugLogging && console.log(`${idx}  ${JSON.stringify(candidates)}`);
+        Object.keys(candidates).forEach((key) => {
+          if (candidates[key].length === 1) {
+            var cellIdx = candidates[key][0];
+            solvedList.push({ cellIdx, key });
+          }
+        });
+      });
+
+      solvedList.forEach((solve) => {
+        isDebugLogging &&
+          console.log(`      Setting cell ${solve.cellIdx} to ${solve.key}`);
+        cellSetValue(solve.cellIdx, solve.key);
+      });
+      shouldContinue = solvedList.length > 0;
+    }
+    isDebugLogging && console.log("Unsolved ", gridUnsolvedCount());
+  }
+
+  function setsGetAll() {
+    var allSets = [].concat(rowSet).concat(colSet).concat(boxSet);
+    var cloneOfAllSets = JSON.parse(JSON.stringify(allSets));
+    return cloneOfAllSets;
+  }
+
+  function setsGroupCellsByUnsolvedNumbers(set) {
+    return set.reduce((acc, cellIdx) => {
+      cellGetValueAsString(cellIdx)
+        .split("")
+        .forEach((n) => {
+          if (acc[n] === undefined) {
+            acc[n] = [];
+          }
+          acc[n].push(cellIdx);
+        });
+      return acc;
+    }, {});
+  }
+
+  function testThings() {
+    testIfCorrect();
+  }
+
+  function testIfCorrect() {
+    var inputString = `439672815
+781395264
+562841397
+897463521
+124957683
+653128479
+315786942
+976234158
+248519736`;
+    isDebugLogging = true;
+    var testGrid = new Grid(inputString);
+    console.log(testGrid.gridSerializeForDisplay());
+    console.log(
+      "Test if correct",
+      inputString,
+      solvedCellCount,
+      testGrid.checkForCorrectness()
+    );
+  }
+
+  module.exports = { grid: Grid, setLogLevel: configLogLevel, testThings };
 })();

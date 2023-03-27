@@ -1,7 +1,7 @@
 (function () {
   var tests = [
     {
-      desc: "Difficult - 5 of 5",
+      desc: "1. Difficult - 5 of 5",
       input: `
 100005030
 405080000
@@ -13,10 +13,19 @@
 000060108
 090200003
 `,
-      expected: ``,
+      expected: `
+|1|6|9|4|7|5|8|3|2
+|4|3|5|1|8|2|7|6|9
+|2|8|7|3|9|6|4|1|5
+|9|7|3|5|2|1|6|8|4
+|8|4|1|6|3|9|2|5|7
+|5|2|6|8|4|7|3|9|1
+|3|1|4|7|5|8|9|2|6
+|7|5|2|9|6|3|1|4|8
+|6|9|8|2|1|4|5|7|3`,
     },
     {
-      desc: "Medium - 4 of 5",
+      desc: "2. Medium - 4 of 5",
       input: `
 208005040
 050740008
@@ -40,7 +49,7 @@
 |9|3|1|5|7|4|8|2|6`,
     },
     {
-      desc: "Grid - Difficult1",
+      desc: "3. Grid - Difficult1",
       input: `
 000000000
 080090200
@@ -68,7 +77,7 @@
 |2|4|8|5|1|9|7|3|6`,
     },
     {
-      desc: "Grid1 - Easy",
+      desc: "4. Grid1 - Easy",
       input: `
 	064093710
 270800096   
@@ -92,7 +101,7 @@
 |3|2|6|4|1|7|9|5|8`,
     },
     {
-      desc: "Grid 2 - Difficulty Two of Five",
+      desc: "5. Grid 2 - Difficulty Two of Five",
       input: `200680000
 006020015
 004579600
@@ -115,7 +124,7 @@
 |5|6|1|8|9|7|4|3|2`,
     },
     {
-      desc: "Grid 3 - Difficulty 3 of 5",
+      desc: "6. Grid 3 - Difficulty 3 of 5",
       input: `
 042060000
 000489020
