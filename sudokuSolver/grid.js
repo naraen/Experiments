@@ -222,7 +222,11 @@
   }
 
   function gridInit(input) {
-    gridSetupEmpty();
+    isHalted = false;
+    unsolvedSets = setsGetAll();
+    solvedCellCount = 0;
+
+    cellValue = Array(81).fill(123456789);
 
     var cleanInput = input.replace(/[\n\t \|]/g, "").split("");
 
@@ -300,14 +304,6 @@
       rowVals += cellGetValueAsString(idx);
     }
     return rowVals;
-  }
-
-  function gridSetupEmpty() {
-    isHalted = false;
-    unsolvedSets = setsGetAll();
-    solvedCellCount = 0;
-
-    cellValue = Array(81).fill(123456789);
   }
 
   function gridUnsolvedCount() {
@@ -449,5 +445,5 @@
     }, {});
   }
 
-  module.exports = { grid: Grid, setLogLevel: configLogLevel, testThings };
+  module.exports = { grid: Grid, setLogLevel: configLogLevel };
 })();

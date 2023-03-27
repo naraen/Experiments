@@ -5,21 +5,12 @@
 
   const Grid = require("./grid.js").grid;
   var gridSetLogLevel = require("./grid.js").setLogLevel;
-  //  var testHelper = require("./grid.js").testThings;
 
-  //  testHelper();
-
-  //return;
-  //propagate solved cells.   Done
-  //TODO: stop visiting solved cells. Done
-  //TODO: find unique value in set.  Done
   //TODO: propagate with shared tuples.
-  //TODO : use brute force. - Done
-  //TODO: emit hints - Done
 
   var inputs = [];
 
-  gridSetLogLevel("No Op" /* No Op, Debug*/);
+  gridSetLogLevel("NoOp" /* NoOp, Debug*/);
   inputs = testData;
 
   inputs.forEach((thisTest) => {
