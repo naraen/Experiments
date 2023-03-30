@@ -78,7 +78,6 @@
       throw new Error(
         `candidateValue: Expected number, was ${typeof candidateValue}`
       );
-
     return (
       cellGetValueAsString(cellIdx).toString().indexOf(candidateValue) !== -1
     );
@@ -106,28 +105,35 @@
       return;
     }
 
-    if (!cellIsValueACandidate(cellIdx, valueToRemove)) {
-      isDebugLogging && console.log(diagInfo, "Already removed. NoOp");
-      tabLevel.pop();
-      return;
-    }
-
-    if (cellIsSolved(cellIdx)) {
-      isDebugLogging && console.log(diagInfo, "Already solved.  Exiting");
-      tabLevel.pop();
-      return;
-    }
-
-    var cellValuesAfterRemoval = parseInt(
-      cellGetValueAsString(cellIdx).replace(valueToRemove, "")
-    );
+    var valuesToRemove = valueToRemove
+      .toString()
+      .split("")
+      .map((v) => parseInt(v));
     isDebugLogging &&
-      console.log(
-        diagInfo,
-        `new value ${cellGetValueAsString(cellIdx).replace(valueToRemove, "")}`
-      );
+      console.log(diagInfo, "values to remove", JSON.stringify(valuesToRemove));
 
-    cellSetValue(cellIdx, parseInt(cellValuesAfterRemoval));
+    valuesToRemove.forEach((v) => {
+      if (!cellIsValueACandidate(cellIdx, v)) {
+        isDebugLogging && console.log(diagInfo, "Already removed. NoOp");
+        return;
+      }
+
+      if (cellIsSolved(cellIdx)) {
+        isDebugLogging && console.log(diagInfo, "Already solved.  Exiting");
+        return;
+      }
+
+      var cellValuesAfterRemoval = parseInt(
+        cellGetValueAsString(cellIdx).replace(v, "")
+      );
+      isDebugLogging &&
+        console.log(
+          diagInfo,
+          `new value ${cellGetValueAsString(cellIdx).replace(v, "")}`
+        );
+
+      cellSetValue(cellIdx, parseInt(cellValuesAfterRemoval));
+    });
 
     tabLevel.pop();
   }
@@ -159,14 +165,15 @@
     var _self = this;
 
     _self.checkForCorrectness = gridCheckForCorrectness;
+    _self.findSingleCandidates = setsFindSingleCandidates;
     _self.getGridForDisplay = gridSerializeForDisplay;
     _self.getGridForSimpleDisplay = gridSerializeForSimpleDisplay;
     _self.isSolved = gridIsSolved;
+    _self.isHalted = () => isHalted;
     _self.unsolvedCount = gridUnsolvedCount;
-    _self.useHints = gridUseHints;
-
     _self.useBruteForce = gridUseBruteForce;
-    _self.findSingleCandidates = setsFindSingleCandidates;
+    _self.useHints = gridUseHints;
+    _self.removeCandidate = cellRemoveCandidate;
 
     gridInit(input);
   }
@@ -332,7 +339,7 @@
 
     var loopCount = 50;
     var hint = null;
-    while (!isSolved() && stash.length > 0 && loopCount > 0) {
+    while (!gridIsSolved() && stash.length > 0 && loopCount > 0) {
       loopCount--;
       hint = stash.pop();
       isDebugLogging && console.log("Trying :", JSON.stringify(hint.hints));
@@ -341,7 +348,7 @@
       cellSetValue(hint.cellIdx, hint.number);
       setsFindSingleCandidates();
 
-      if (!isSolved() && !isHalted) {
+      if (!gridIsSolved() && !isHalted) {
         thisState = gridSerialize();
         firstUnsolvedPosition = thisState.indexOf(0);
         cellGetValueAsString(firstUnsolvedPosition)
@@ -362,9 +369,9 @@
     isDebugLogging &&
       console.log(
         "Hints :",
-        isSolved() ? hint.hints : "Couldn't generate hints"
+        gridIsSolved() ? hint.hints : "Couldn't generate hints"
       );
-    return isSolved() ? hint.hints : [];
+    return gridIsSolved() ? hint.hints : [];
   }
 
   function gridUseHints(hints) {

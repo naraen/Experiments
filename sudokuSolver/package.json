@@ -4,6 +4,13 @@
     "prettier": "2.8.6"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "updparser" : "npx nearleyc -o repl_grammar.js repl_language.ne",
+    "prettyjs" : "npx prettier --write index.js grid.js tests",
+    "start" : "npx nearleyc -o repl_grammar.js repl_language.ne && node index.js 2> err.out"
+  },
+  "dependencies": {
+    "moo": "^0.5.2",
+    "nearley": "^2.20.1"
   }
 }
