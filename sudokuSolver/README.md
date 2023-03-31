@@ -157,7 +157,7 @@ Analyzes candidate values of each unsolved cell in a set, to find any candidate 
 
 This strategy will run repeatedly until no more solves are found. 
 
-** use brute force **
+**use brute force**
 
 Attempts to solve the grid through brute force.   
 
@@ -170,8 +170,8 @@ Current iteration limit is 50.
 
 
 ## References
-[The math behind Sudoku] (http://pi.math.cornell.edu/~mec/Summer2009/Mahmood/Home.html)
-[How to make a parser with Nearley.js - Part 1](https://www.youtube.com/watch?v=51XwG1W2ysU)
+- [The math behind Sudoku] (http://pi.math.cornell.edu/~mec/Summer2009/Mahmood/Home.html)
+- [How to make a parser with Nearley.js - Part 1](https://www.youtube.com/watch?v=51XwG1W2ysU)
 
 
 
