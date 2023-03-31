@@ -13,7 +13,9 @@ It supports a few solving strategies.
  4. Brute Force
 
 
-To get started.  In your command terminal
+##Getting started
+
+In your command terminal
 ```
     git clone <<repository>>
     npm install 
@@ -23,6 +25,7 @@ To get started.  In your command terminal
 This will drop you into a repl. In the repl you can input and interact with a grid. The
 
 
+##Interactive Commands
 The repl supports the following commands
 
 **init grid**  <81 grid numbers as input>
@@ -163,10 +166,10 @@ Starting with the first unsolved cell, sets cell value to one of the candidate v
 Current iteration limit is 50.
 
 ## Using the solver programmatically
-<< to be filled >>
+<< coming soon >>
 
 
-References
+## References
 [The math behind Sudoku] (http://pi.math.cornell.edu/~mec/Summer2009/Mahmood/Home.html)
 [How to make a parser with Nearley.js - Part 1](https://www.youtube.com/watch?v=51XwG1W2ysU)
 
