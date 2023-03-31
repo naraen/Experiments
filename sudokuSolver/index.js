@@ -18,11 +18,14 @@
   //TODO: add help command in grammar
   //TODO: forgive lack of spacing in cellIdx = value syntax.  Done
   //TODO: implement quit command in the grammar - DONE
+  //TODO: Enforce numbers to be int
+  //TODO: Change internal cellIdx to be RowCol reference instead of array index reference
 
   var inputThroughConsole = "";
   var boolIsDoneReceiving = true;
   var gridFromConsoleInput;
   var hintHistory = [];
+  var stash = [];
 
   function receiveInput(input) {
     inputThroughConsole += (input || "").toString().replace(/[^0-9]/g, "");
@@ -46,10 +49,8 @@
     terminal: false,
   });
 
-
-
   rl.on("line", (line) => {
-    if (line.indexOf('quit') > -1 ){
+    if (line.indexOf("quit") > -1) {
       rl.close();
       return;
     }
@@ -60,7 +61,7 @@
     }
 
     try {
-      var {commandId, command} =  repl.parseInput(line);
+      var { commandId, command } = repl.parseInput(line);
       if (commandId != undefined) {
         runCommand(commandId, command);
       }
@@ -71,8 +72,9 @@
     }
   });
 
-
-
+  function inputToCellIdx(inp) {
+    return parseInt(inp / 10 - 1) * 9 + (inp % 10) - 1;
+  }
 
   function runCommand(commandId, command) {
     switch (commandId) {
@@ -80,10 +82,27 @@
         inputThroughConsole = "";
         hintHistory = [];
         receiveInput(command.numbers);
-        return;
         break;
       case "show_grid":
-        console.log(gridFromConsoleInput.getGridForDisplay());
+        var formattedGrid = gridFromConsoleInput.getGridForDisplay();
+
+        if (command.numbers != undefined) {
+          //TODO: why is numbers not being post processed?
+          //https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+          //Highlighing number in red.
+          var pattern = command.numbers.value;
+          formattedGrid = formattedGrid.replaceAll(
+            pattern,
+            "\x1b[31m" + pattern + "\x1b[0m"
+          );
+        }
+        console.log(formattedGrid);
+        break;
+      case "rewind_grid":
+        if (stash.length > 0) {
+          var prevState = stash.pop();
+          gridFromConsoleInput = new Grid(prevState);
+        }
         break;
       case "reset_grid":
         if (inputThroughConsole.length != 81) {
@@ -114,9 +133,13 @@
         console.log(gridFromConsoleInput.checkForCorrectness() ? "Yes" : "No");
         break;
       case "use_only_choice":
+        var currentState = gridFromConsoleInput.serialize();
+        stash.push(currentState);
         gridFromConsoleInput.findSingleCandidates();
         break;
       case "use_brute_force":
+        var currentState = gridFromConsoleInput.serialize();
+        stash.push(currentState);
         var hints = gridFromConsoleInput.useBruteForce();
         console.log(`hints = ${JSON.stringify(hints)}`);
         break;
@@ -128,12 +151,14 @@
         break;
       case "use_hint":
         var { cellIdx, value } = command;
-        console.log(153, command);
         if (isNaN(cellIdx) || isNaN(value)) {
           console.log("could not parse hints", command);
         } else {
+          cellIdx = inputToCellIdx(cellIdx);
           console.log(`Received hint.  ${cellIdx} = ${value}`);
           hintHistory.push([cellIdx, value]);
+          var currentState = gridFromConsoleInput.serialize();
+          stash.push(currentState);
           gridFromConsoleInput.useHints([[cellIdx, value]]);
         }
         break;
@@ -142,8 +167,11 @@
         if (isNaN(cellIdx) || isNaN(value)) {
           console.log("could not parse command", command);
         } else {
-          console.log(`Applying .  ${cellIdx} = ${value}`);
-          gridFromConsoleInput.useHints([cellIdx, value]);
+          cellIdx = inputToCellIdx(cellIdx);
+          console.log(`Applying.  ${cellIdx} = ${value}`);
+          var currentState = gridFromConsoleInput.serialize();
+          stash.push(currentState);
+          gridFromConsoleInput.setValue(cellIdx, value);
         }
         break;
       case "remove_value":
@@ -151,7 +179,10 @@
         if (isNaN(cellIdx) || isNaN(value)) {
           console.log("could not parse command", command);
         } else {
-          console.log(`Applying .  ${cellIdx} != ${value}`);
+          cellIdx = inputToCellIdx(cellIdx);
+          console.log(`Applying.  ${cellIdx} != ${value}`);
+          var currentState = gridFromConsoleInput.serialize();
+          stash.push(currentState);
           gridFromConsoleInput.removeCandidate(cellIdx, value);
         }
 

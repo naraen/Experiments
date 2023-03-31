@@ -52,7 +52,7 @@
   var isHalted = false;
   var cellValue = Array(81).fill(123456789);
   var unsolvedSets = null;
-  var tabLevel = [];
+  var tabLevel = 0;
   var solvedCellCount = 0;
 
   function configLogLevel(logLevel) {
@@ -84,9 +84,9 @@
   }
 
   function cellRemoveCandidate(cellIdx, valueToRemove) {
-    tabLevel.push("\t");
-    const diagInfo = `${tabLevel.join(
-      ""
+    tabLevel++;
+    const diagInfo = `${"".repeat(
+      tabLevel * 2
     )} cellRemoveCandidate( cellIdx=${cellIdx}, value=${valueToRemove} )`;
     isDebugLogging &&
       console.log(diagInfo, `Entering.  Current value  ${cellValue[cellIdx]}`);
@@ -101,7 +101,7 @@
     if (cellValue[cellIdx] == parseInt(valueToRemove)) {
       isDebugLogging && console.log(diagInfo, `Problem. Halting!`);
       isHalted = true;
-      tabLevel.pop();
+      tabLevel--;
       return;
     }
 
@@ -135,7 +135,7 @@
       cellSetValue(cellIdx, parseInt(cellValuesAfterRemoval));
     });
 
-    tabLevel.pop();
+    tabLevel--;
   }
 
   function cellSetValue(cellIdx, value) {
@@ -166,6 +166,7 @@
 
     _self.checkForCorrectness = gridCheckForCorrectness;
     _self.findSingleCandidates = setsFindSingleCandidates;
+    _self.serialize = gridSerialize;
     _self.getGridForDisplay = gridSerializeForDisplay;
     _self.getGridForSimpleDisplay = gridSerializeForSimpleDisplay;
     _self.isSolved = gridIsSolved;
@@ -174,6 +175,7 @@
     _self.useBruteForce = gridUseBruteForce;
     _self.useHints = gridUseHints;
     _self.removeCandidate = cellRemoveCandidate;
+    _self.setValue = cellSetValue;
 
     gridInit(input);
   }
@@ -332,7 +334,7 @@
           number: num,
           state: thisState,
           hints: [[firstUnsolvedPosition, num]],
-          tabLevel: "",
+          tabLevel: 0,
         };
         stash.push(valueToTry);
       });
@@ -359,7 +361,7 @@
               number: num,
               state: thisState,
               hints: [...hint.hints, [firstUnsolvedPosition, num]],
-              tabLevel: hint.tabLevel + "\t",
+              tabLevel: hint.tabLevel + 1,
             };
             stash.push(valueToTry);
           });
@@ -409,7 +411,7 @@
 
     while (shouldContinue && !isHalted && !gridIsSolved()) {
       isDebugLogging && console.log("setsFindSingleCandidates");
-      var solvedList = [];
+      var solves = {};
       isDebugLogging && console.log(gridSerializeForDisplay());
       unsolvedSets.forEach((set, idx) => {
         var candidates = setsGroupCellsByUnsolvedNumbers(set);
@@ -417,14 +419,14 @@
         Object.keys(candidates).forEach((key) => {
           if (candidates[key].length === 1) {
             var cellIdx = candidates[key][0];
-            solvedList.push({ cellIdx, key });
+            solves[cellIdx] = { cellIdx, key };
           }
         });
       });
 
+      var solvedList = Object.values(solves);
       solvedList.forEach((solve) => {
-        isDebugLogging &&
-          console.log(`      Setting cell ${solve.cellIdx} to ${solve.key}`);
+        console.log(`  Setting ${solve.cellIdx} = ${solve.key}`);
         cellSetValue(solve.cellIdx, solve.key);
       });
       shouldContinue = solvedList.length > 0;

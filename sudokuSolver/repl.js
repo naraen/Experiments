@@ -1,5 +1,5 @@
 (function () {
-  "use strict"
+  "use strict";
   const nearley = require("nearley");
   const grammar = require("./repl_grammar.js");
 
@@ -7,6 +7,7 @@
     { usecase: "init_grid", verb: "init", object: "grid" },
     { usecase: "reset_grid", verb: "reset", object: "grid" },
     { usecase: "show_grid", verb: "show", object: "grid" },
+    { usecase: "rewind_grid", verb: "rewind", object: "grid" },
     { usecase: "show_input", verb: "show", object: "input" },
     {
       usecase: "show_unsolved_count",
@@ -38,18 +39,18 @@
   ];
 
   function parseInput(input) {
-      const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-      parser.feed(input.replace(/\\n/, "\n"));
-      var result = parser.results;
-      //Parsing returns nested arrays since grammar us ambigous.
-      //This is a temporary hack until we cleanup the grammar.
-      while (Array.isArray(result)) result = result[0];
-      var command = result;
-      var commandId = findCommandId(command);
-      return {commandId, command};
+    const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+    parser.feed(input.replace(/\\n/, "\n"));
+    var result = parser.results;
+    //Parsing returns nested arrays since grammar us ambigous.
+    //This is a temporary hack until we cleanup the grammar.
+    while (Array.isArray(result)) result = result[0];
+    var command = result;
+    var commandId = findCommandId(command);
+    return { commandId, command };
   }
 
-   function findCommandId(command) {
+  function findCommandId(command) {
     if (command == undefined) return;
 
     return commandChart.reduce((usecase, c) => {
@@ -65,5 +66,5 @@
     }, null);
   }
 
-  module.exports = { parseInput }
- })()
+  module.exports = { parseInput };
+})();

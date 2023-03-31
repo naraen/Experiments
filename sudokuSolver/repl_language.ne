@@ -2,7 +2,7 @@
 	const moo= require('moo');
 
 	const keywords = {
-	    'command': ['show', 'use', 'init', 'reset', 'set', 'remove', 'is'],
+	    'command': ['show', 'unshow', 'use', 'init', 'reset', 'set', 'remove', 'is', 'rewind'],
 	    'object': ['grid', 'hint', 'value', 'it', 'unsolved', 'debug', 'input' ],
 	    'qualifier' : ['solved', 'stuck', 'correct', 'history', 'count', 'on', 'off'],
 	    'strategy_word' : ['brute', 'force', 'only', 'choice']
@@ -32,7 +32,7 @@ command -> %command __ %object _
 				object: t[2].value
 			}) %}
 
-		| %command __ %object __ %number _ %eq _ %number 
+		| %command __ %object __ %number _ %eq _ %number _
 			{% (t) => ({
 				verb: t[0].value,
 				object:  t[2].value,
@@ -41,21 +41,21 @@ command -> %command __ %object _
 				value: Number(t[8].value) 
 			}) %}
 
-		| %command __ %object __ numbers
+		| %command __ %object __ numbers _
 			{% (t) => ({
 				verb: t[0].value, 
 				object : t[2].value, 
 				numbers : t[4]
 			}) %}
 
-		| %command __ %object __ %qualifier
+		| %command __ %object __ %qualifier _
 			{% (t) => ({
 				verb : t[0].value, 
 				object : t[2].value, 
 				qualifier : t[4].value 
 			}) %}
 
-		| %command __ strategy
+		| %command __ strategy _
 			{% (t) => ({
 				verb : t[0].value, 
 				strategy : t[2] 
