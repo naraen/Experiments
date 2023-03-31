@@ -29,6 +29,7 @@ This will drop you into a repl. In the repl you can input and interact with a gr
 The repl supports the following commands
 
 **init grid**  <81 numbers as input>
+
 Initialize the solver with the puzzle to work on. 
 
 The command expects 81 numbers.  Unsolved cells should be represented by 0.   If there is a mistake while entering numbers, entering `init grid` on a newline, will restart the sequence.
@@ -71,9 +72,9 @@ The solver automatically applies the Eliminate strategy after processing any use
 
 **show grid** [number]
 
-Outputs the grid to the console in a 9 x 9 format.  It shows current possible values for unsolved cells.
+Outputs the grid to the console in a 9 x 9 format.  For unsolved cells possible values are shown.
 
-An optional number can be provided to the command, to be highlighted in red for ease of spotting patterns.
+The number is optional.  If provided, the number is highlighted in red for ease of spotting patterns.
 ``` 
    E.g. show grid 7
    
@@ -82,7 +83,7 @@ An optional number can be provided to the command, to be highlighted in red for 
 
 **set value**  *cellIdx* = *value*
 
-Sets the value of the cell identified by cellIdx to the value provided.  The state of the grid before setting the cell, to enable a future rewind.  Applies eliminate strategy after setting the value.    
+Sets the value of the cell identified by cellIdx to the specified value.  The state of the grid before modification is saved, to enable future rewind.  Applies eliminate strategy after setting the value.    
 
 ```
   E.g. set value 23 = 7
