@@ -141,6 +141,7 @@ The repl supports the following commands
     Same as set value, except that a list of hints used can be viewed with `show hint history`.   This is useful, to keep track, when trying different solves. 
 
 **show hint history**
+
     Displays a list hints applied so far. 
 
 **set debug** *on*
