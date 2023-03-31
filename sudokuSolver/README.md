@@ -259,11 +259,11 @@ No
 59 unsolved cells
 
 >use only choice
-  Setting 9 = 9
-  Setting 56 = 9
-  Setting 58 = 1
-  Setting 68 = 9
-  Setting 59 = 2
+  Setting 21 = 9
+  Setting 73 = 9
+  Setting 75 = 1
+  Setting 86 = 9
+  Setting 76 = 2
 
 >show grid
 ================================================================================================
@@ -328,7 +328,7 @@ Applying.  21 = 9
 > show grid 9
 
 ================================================================================================
-||     4567|         |      478||        1|    34568|     3567||        2|        9|      458||
+||     4567|     4578|      478||        1|    34568|     3567||        2|        9|      458||
 ||        9|    14578|        3||      478|        2|       57||        6|     4578|     1458||
 ||     4567|   124578|    12478||    34678|        9|     3567||   134578|    34578|     1458||
 ================================================================================================
@@ -367,10 +367,10 @@ Applying.  21 = 9
 ================================================================================================
 
 > remove value 11=47
-Applying.  0 != 47
+Applying.  11 != 47
 
 > remove value 31=47
-Applying.  18 != 47
+Applying.  31 != 47
 
 > show grid    
 
@@ -389,21 +389,21 @@ Applying.  18 != 47
 ================================================================================================
 
 > set value 54=9
-Applying.  39 = 9
+Applying.  54 = 9
 
 > show unsolved count
 50 unsolved cells
 
 > use only choice
-  Setting 30 = 2
-  Setting 35 = 9
-  Setting 31 = 6
-  Setting 5 = 3
-  Setting 43 = 2
-  Setting 44 = 6
-  Setting 2 = 7
-  Setting 17 = 5
-  Setting 34 = 4
+  Setting 44 = 2
+  Setting 49 = 9
+  Setting 45 = 6
+  Setting 16 = 3
+  Setting 58 = 2
+  Setting 59 = 6
+  Setting 13 = 7
+  Setting 29 = 5
+  Setting 48 = 4
 
 > is it solved
 Yes
