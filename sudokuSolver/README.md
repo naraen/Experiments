@@ -13,7 +13,7 @@ It supports a few solving strategies.
  4. Brute Force
 
 
-##Getting started
+## Getting started
 
 In your command terminal
 ```
@@ -25,14 +25,15 @@ In your command terminal
 This will drop you into a repl. In the repl you can input and interact with a grid. The
 
 
-##Interactive Commands
+## Interactive Commands
 The repl supports the following commands
 
-**init grid**  <81 grid numbers as input>
+**init grid**  <81 numbers as input>
+Initialize the solver with the puzzle to work on. 
 
-The command expects 81 numbers.  Use 0 to represent blank spaces.  It is forgiving of white spaces (tabs, blanks, newlines).   
+The command expects 81 numbers.  Unsolved cells should be represented by 0.   If there is a mistake while entering numbers, entering `init grid` on a newline, will restart the sequence.
 
-The following are equivalent and will initialize to the same grid
+The command is forgiving of white spaces (tabs, blanks, newlines) while entering numbers.    The following are equally valid ways to initialize same puzzle.
 
 ```
   init grid 000100290003020600000090000100008000300071000296000000060000003005000010000504007
@@ -47,7 +48,7 @@ The following are equivalent and will initialize to the same grid
 	005000010
 	000504007
 
-init grid 
+  init grid 
   005 200 070 
   003 001 000 
   020 000 005 
@@ -64,9 +65,7 @@ init grid
 
 The eliminate strategy eliminates value of a solved cell from other cells in a set.   
 ```
-E.g. Row 1, Column 1 is a 5.
-
-This strategy eliminates 5 as candidate from all other other in Row 1, Col 1 and Box 1. 
+E.g. When Row 1, Column 1 is 5.  This strategy eliminates 5 as candidate from all other other in Row 1, Col 1 and Box 1. 
 ```
 The solver automatically applies the Eliminate strategy after processing any user command that modifies the grid. There is no interactive command to use this strategy.
 
