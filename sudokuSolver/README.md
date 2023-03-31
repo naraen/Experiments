@@ -1,6 +1,8 @@
 # Sudoku Solver
 
-This is a sudoku solver that I worked on to brush up on nodejs and javascript. It is intended to be primarily used interactively through a [repl](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop).  However it can be imported as a module to progrmatically run as a solver. 
+This is a sudoku solver that I worked on to brush up on nodejs and javascript. It is intended to  primarily be used interactively through a [repl](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop).  
+
+However, it is well modularized and it is possible to import the solver and run it progrmatically. 
 
 It uses [Nearley parser](https://nearley.js.org/) with [moo tokenizer](http://github.com/tjvr/moo)  for processing the repl input. 
 
